@@ -637,14 +637,25 @@ function moneyFormat(v){var n=parseFloat(v)||0;return'R$ '+n.toFixed(2).replace(
 /* ============================================================
    CRIPTOGRAFIA DE SENHAS (HASH SIMPLES)
    ============================================================ */
-var Crypto={
-  _pepper:'marlift2024sys_v10',
-  hash:function(str){
-    var h=0,s=str+this._pepper;
-    for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0}
-    return 'h'+Math.abs(h).toString(36)
+var Crypto = {
+  _pepper: 'marlift2024sys_v10',
+  hash: function(str) {
+    var h = 0, s = str + this._pepper;
+    for (var i = 0; i < s.length; i++) {
+      h = ((h << 5) - h) + s.charCodeAt(i);
+      h |= 0;
+    }
+    return 'h' + Math.abs(h).toString(36);
   },
-  verify:function(input,hash){return this.hash(input)===(hash||'')}
+  verify: function(input, hash) {
+    if (!hash) return false;
+    // Fallback para senhas antigas em texto puro (pré-migração)
+    if (typeof hash === 'string' && hash.indexOf('h') !== 0 && input === hash) {
+      console.warn('[CRYPTO] Senha em texto puro detectada – será atualizada no próximo login');
+      return true;
+    }
+    return this.hash(input) === hash;
+  }
 };
 
 /* ============================================================
@@ -888,39 +899,51 @@ var Auth={currentUser:null,inactivityTimer:null,
   isAdmin:function(){return this.currentUser&&this.currentUser.nivel==='admin'},
   isTecnico:function(){return this.currentUser&&this.currentUser.nivel==='tecnico'},
   resetInactivityTimer:function(){if(this.inactivityTimer)clearTimeout(this.inactivityTimer);if(this.currentUser)this.inactivityTimer=setTimeout(function(){Auth.logout('inactivity')},Config.inactivityTimeout)},
-  getUsers:function(){
-    var u=localStorage.getItem('marlift_users');
-    if(u){
-      try{
-        var arr=JSON.parse(u);
-        if(!Array.isArray(arr)||!arr.length)throw 0;
-        /* ===== MIGRACAO: detecta senhas antigas (texto puro) e re-hasifica ===== */
-        var precisaMigrar=false;
-        arr.forEach(function(usr){
-          if(!usr.senha||typeof usr.senha!=='string'||usr.senha.indexOf('h')!==0){
-            precisaMigrar=true;
-            if(usr.login==='admin') usr.senha=Crypto.hash('admin123');
-            else if(usr.login==='tecnico') usr.senha=Crypto.hash('123456');
-            else usr.senha=Crypto.hash(usr.senha||'123456');
-          }
-        });
-        if(precisaMigrar){
-          console.log('[AUTH] Senhas migradas para hash com sucesso.');
-          localStorage.setItem('marlift_users',JSON.stringify(arr));
-        }
-        return arr;
-      }catch(e){
-        console.warn('[AUTH] Dados de usuarios corrompidos, recriando...',e);
-        localStorage.removeItem('marlift_users');
+getUsers: function() {
+  var raw = localStorage.getItem('marlift_users');
+  var users = [];
+  var precisaSalvar = false;
+
+  try {
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) {
+        users = parsed;
+      } else {
+        console.warn('[AUTH] Dados de usuários inválidos (não array ou vazio)');
       }
     }
-    var d=[
-      {id:1,nome:'Administrador',login:'admin',senha:Crypto.hash('admin123'),nivel:'admin'},
-      {id:2,nome:'Tecnico Principal',login:'tecnico',senha:Crypto.hash('123456'),nivel:'tecnico'}
+  } catch(e) {
+    console.error('[AUTH] Erro ao parsear usuários:', e);
+  }
+
+  // Se não há usuários válidos, cria os padrão
+  if (!users.length) {
+    users = [
+      { id: 1, nome: 'Administrador', login: 'admin', senha: Crypto.hash('admin123'), nivel: 'admin' },
+      { id: 2, nome: 'Tecnico Principal', login: 'tecnico', senha: Crypto.hash('123456'), nivel: 'tecnico' }
     ];
-    localStorage.setItem('marlift_users',JSON.stringify(d));
-    return d;
-  },
+    precisaSalvar = true;
+  } else {
+    // Força migração: qualquer senha que NÃO comece com 'h' deve ser re-hasheada
+    users = users.map(function(u) {
+      if (!u.senha || typeof u.senha !== 'string' || u.senha.indexOf('h') !== 0) {
+        console.log('[AUTH] Migrando senha do usuário:', u.login);
+        var novaSenha = Crypto.hash(u.senha || '123456');
+        precisaSalvar = true;
+        return Object.assign({}, u, { senha: novaSenha });
+      }
+      return u;
+    });
+  }
+
+  if (precisaSalvar) {
+    console.log('[AUTH] Salvando usuários migrados');
+    localStorage.setItem('marlift_users', JSON.stringify(users));
+  }
+
+  return users;
+},
   saveUsers:function(u){localStorage.setItem('marlift_users',JSON.stringify(u))},
   login:function(){
     var login=$('loginUsername').value.trim(),
@@ -939,14 +962,16 @@ var Auth={currentUser:null,inactivityTimer:null,
     /* FIM DEBUG */
 
     var user=users.find(function(u){return u.login===login&&Crypto.verify(senha,u.senha)});
-    if(!user){
-      if(errDiv){
-        errDiv.innerHTML='<i class="fas fa-exclamation-triangle"></i> Credenciais invalidas!<br><span style="font-size:11px;opacity:.7">Usuario: <strong>'+esc(login)+'</strong> | Hash: <code>'+Crypto.hash(senha)+'</code></span>';
-        errDiv.style.display='block';
-      }
-      $('loginPassword').value='';
-      return;
-    }
+if(!user){
+  if(errDiv){
+    errDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Credenciais inválidas!<br>' +
+      '<span style="font-size:11px;opacity:.7">Verifique usuário e senha.<br>' +
+      'Usuários disponíveis: ' + users.map(u => u.login).join(', ') + '</span>';
+    errDiv.style.display = 'block';
+  }
+  $('loginPassword').value = '';
+  return;
+}
     this.currentUser=user;
     localStorage.setItem('marlift_current_user',JSON.stringify(user));
     $('loginScreen').style.display='none';
