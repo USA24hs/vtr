@@ -438,7 +438,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div><label class="block text-xs text-[var(--muted)] mb-1">N° O.S</label><input type="text" id="numeroOS" class="form-input font-mono font-bold text-lg" readonly placeholder="Clique em Nova OS"></div>
           <div><label class="block text-xs text-[var(--muted)] mb-1">Data</label><input type="date" id="dataOS" class="form-input"></div>
-          <div><label class="block text-xs text-[var(--muted)] mb-1">Tipo de Chamado</label><select id="tipoChamado" class="form-input"><option value="normal">Normal</option><option value="emergencial">Emergencial</option><option value="garantia">Garantia</option><option value="preventiva">Preventiva</option><option value="corretiva">Corretiva</option><option value="avaliacao">Avaliacao</option><option value="orcamento">Orcamento</option></select></div>
+          <div><label class="block text-xs text-[var(--muted)] mb-1">Tipo de Chamado</label><select id="tipoChamado" class="form-input"><option value="normal">Normal</option><option value="emergencial">Emergencial</option><option value="garantia">Garantia</option><option value="preventiva">Preventiva</option><option value="corretiva">Corretiva</option><option value="avaliacao">Avaliacao</option></select></div>
         </div>
         <div><label class="block text-xs text-[var(--muted)] mb-1">Relato do Cliente</label><textarea id="relatoCliente" class="form-input" rows="2" placeholder="Descreva o problema..."></textarea></div>
         <div class="action-buttons no-print" id="osActionButtons">
@@ -555,7 +555,7 @@
         <h2 class="font-display text-xl mb-3">Historico de O.S</h2>
         <div class="flex flex-wrap gap-3 mb-4" id="historicoToolbar">
           <input type="text" id="historicoSearch" placeholder="Buscar..." class="form-input w-48">
-          <select id="historicoFiltroTipo" class="form-input w-36"><option value="">Todos os Tipos</option><option value="emergencial">Emergencial</option><option value="preventiva">Preventiva</option><option value="corretiva">Corretiva</option><option value="garantia">Garantia</option><option value="normal">Normal</option><option value="avaliacao">Avaliacao</option><option value="orcamento">Orcamento</option></select>
+          <select id="historicoFiltroTipo" class="form-input w-36"><option value="">Todos os Tipos</option><option value="emergencial">Emergencial</option><option value="preventiva">Preventiva</option><option value="corretiva">Corretiva</option><option value="garantia">Garantia</option><option value="normal">Normal</option><option value="avaliacao">Avaliacao</option></select>
           <select id="historicoFiltroStatus" class="form-input w-32"><option value="">Todos Status</option><option value="abertura">Abertura</option><option value="execucao">Execucao</option><option value="finalizacao">Finalizando</option><option value="fechada">Fechada</option><option value="aprovada">Aprovada</option></select>
           <button onclick="Historico.exportCSV()" class="btn btn-secondary text-sm" id="btnExportarCSVHistorico"><i class="fas fa-file-csv"></i> Exportar</button>
           <button onclick="Historico.importCSV()" class="btn btn-secondary text-sm" id="btnImportarCSVHistorico"><i class="fas fa-upload"></i> Importar</button>
@@ -634,7 +634,45 @@ function esc(s){if(s===null||s===undefined)return'';var d=document.createElement
 function $(id){return document.getElementById(id)}
 function showToast(msg,err){var t=$('toastCenter');if(!t)return;var m=$('toastMessage');if(m)m.textContent=msg;t.style.borderColor=err?'var(--danger)':'var(--success)';t.querySelector('i').className=err?'fas fa-exclamation-circle text-red-500 text-xl':'fas fa-check-circle text-green-500 text-xl';t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show')},2800)}
 function normalizeDate(v){if(!v)return'';if(typeof v==='string'&&v.includes('T')){var d=new Date(v);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v))return v;return''}
-function extractTimeFromDate(v){if(!v)return'';if(typeof v==='string'&&v.includes('T')){var d=new Date(v);if(!isNaN(d.getTime()))return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}if(typeof v==='string'&&/^\d{2}:\d{2}$/.test(v))return v;if(typeof v==='string'&&v.includes(':')){var p=v.split(':');if(p.length>=2)return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0')}return''}
+function extractTimeFromDate(v){
+  if(!v)return'';
+  if(typeof v==='string'){
+    /* PRIORIDADE 1: extrair HH:MM diretamente da string (evita conversao de fuso) */
+    var m=v.match(/(\d{1,2}):(\d{2})/);
+    if(m){
+      var hh=parseInt(m[1],10),mm=parseInt(m[2],10);
+      if(hh>=0&&hh<=23&&mm>=0&&mm<=59)
+        return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+    }
+    /* PRIORIDADE 2: se for formato ISO com T, extrair a parte do horario diretamente */
+    if(v.includes('T')){
+      var tp=v.split('T')[1];
+      if(tp){
+        var hm=tp.match(/(\d{1,2}):(\d{2})/);
+        if(hm){
+          var h2=parseInt(hm[1],10),m2=parseInt(hm[2],10);
+          if(h2>=0&&h2<=23&&m2>=0&&m2<=59)
+            return String(h2).padStart(2,'0')+':'+String(m2).padStart(2,'0');
+        }
+      }
+    }
+    /* PRIORIDADE 3: ultimo recurso - conversao Date local (pode ter fuso) */
+    if(v.includes('T')||v.includes('-')||v.includes('/')){
+      var d=new Date(v);
+      if(!isNaN(d.getTime()))
+        return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    }
+  }
+  /* PRIORIDADE 4: Google Sheets retorna horario como fracao decimal de dia (ex: 0.3333 = 08:00) */
+  if(typeof v==='number'){
+    var tm=Math.round(v*1440);/* 24*60=1440 minutos no dia */
+    if(tm>=0&&tm<1440){
+      var rh=Math.floor(tm/60),rm=tm%60;
+      return String(rh).padStart(2,'0')+':'+String(rm).padStart(2,'0');
+    }
+  }
+  return'';
+}
 function hojeBr(){return new Date().toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})}
 function agoraBr(){return new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}
 function dataHojeISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
