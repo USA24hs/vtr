@@ -3,45 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Sistema de Deslocamento - Ambulância Lefe</title>
+    <title>Sistema de Deslocamento - Ambulância HCI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #0e5a77;
-            --primary-dark: #0a3d4f;
-            --bg-body: #f1f5f9;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --success: #15803d;
-            --danger: #ef4444;
-        }
-        body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 1rem; padding-bottom: 80px; /* Espaço para a barra mobile */ }
+        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; }
+        body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 1rem; padding-bottom: 80px; }
         .report-container { max-width: 1400px; margin: 0 auto; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
-        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 1.5rem 2rem; color: #fff; }
+        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 1.5rem 2rem; color: #fff; position: relative; transition: padding 0.3s ease; }
         .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.15); }
         .header-top h1 { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .toggle-header-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1rem; transition: 0.3s; }
+        .header-collapsed .toggle-header-btn i { transform: rotate(180deg); }
+        .header-collapsed .info-grid { display: none; }
+        .header-collapsed .header-top { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .month-selector { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); border-radius: 12px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; }
         .month-selector select, .month-selector input { background: #fff; border: none; padding: 4px 8px; border-radius: 8px; font-weight: 700; color: var(--primary-dark); font-family: 'Inter', sans-serif; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.5rem; transition: 0.3s; }
         .info-item { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 14px; }
         .info-item label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.8; display: block; margin-bottom: 4px; }
-        .info-item input, .info-item select { 
-            background: rgba(255,255,255,0.9); border: none; padding: 8px 12px; border-radius: 8px; 
-            font-weight: 700; color: var(--primary-dark); width: 100%; font-family: 'Inter', sans-serif; font-size: 0.9rem;
-        }
-        .info-item select {
-            -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230a3d4f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
-        }
+        .info-item input, .info-item select { background: rgba(255,255,255,0.9); border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; color: var(--primary-dark); width: 100%; font-family: 'Inter', sans-serif; font-size: 0.9rem; }
+        .info-item select { -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230a3d4f' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
         .content { padding: 1.5rem; }
         .card { background: var(--card-bg); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
         .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px; }
-        
-        /* TABELA DESKTOP */
         .table-wrapper { overflow-x: auto; margin: 0 -1rem; padding: 0 1rem; }
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 820px; }
         .log-table th { background: #f8fafc; padding: 10px 6px; border-bottom: 2px solid var(--border); color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; text-align: center; }
@@ -59,11 +46,8 @@
         .add-buttons { display: flex; gap: 12px; }
         .btn-add { border: none; color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-family: 'Inter'; }
         .btn-add-saida { background: var(--primary); }
-        .btn-add-saida:hover { background: var(--primary-dark); }
         .btn-add-retorno { background: var(--success); }
-        .btn-add-retorno:hover { background: #166534; }
         .total-km { background: #eff6ff; padding: 8px 16px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        
         .two-cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
         .obs-box textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.85rem; resize: vertical; background: #f8fafc; }
         .sign-box { background: #f8fafc; border-radius: 16px; padding: 1rem; border: 1px solid var(--border); }
@@ -72,128 +56,57 @@
         .btn-clear { background: none; border: none; color: #64748b; font-size: 0.7rem; cursor: pointer; }
         .legible-name input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-top: 12px; }
         .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 10px; justify-content: center; width: 100%; transition: 0.2s; font-family: 'Inter'; }
-        
-        /* Preview */
         .preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: none; flex-direction: column; padding: 1rem; }
         .preview-overlay.open { display: flex; }
         .preview-container { background: #fff; border-radius: 20px; flex: 1; display: flex; flex-direction: column; max-width: 1200px; width: 100%; margin: 0 auto; overflow: hidden; }
         .preview-toolbar { display: flex; justify-content: space-between; padding: 12px 20px; background: #1e293b; color: #fff; align-items: center; }
         .preview-actions { display: flex; gap: 8px; }
         .btn-p { border: none; padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; color: #fff; font-family: 'Inter'; }
-        .btn-p.dl { background: #0e5a77; }
-        .btn-p.pr { background: #334155; }
-        .btn-p.cl { background: #991b1b; }
+        .btn-p.dl { background: #0e5a77; } .btn-p.pr { background: #334155; } .btn-p.cl { background: #991b1b; }
         .preview-content { flex: 1; background: #525659; overflow: auto; }
         .preview-content iframe { width: 100%; height: 100%; border: none; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 10px 20px; border-radius: 40px; font-size: 0.85rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        
-        /* BARRA FLUTUANTE MOBILE (Oculta no Desktop) */
-        .mobile-action-bar {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 10px 1rem;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
-            z-index: 9999;
-            gap: 10px;
-            justify-content: space-between;
-        }
+        .mobile-action-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px 1rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 9999; gap: 10px; justify-content: space-between; }
         .mobile-action-bar .btn-add { flex: 1; justify-content: center; padding: 14px; font-size: 0.9rem; border-radius: 14px; }
 
-        /* ===================== RESPONSIVO MOBILE ===================== */
         @media (max-width: 768px) {
             body { padding: 0; padding-bottom: 80px; background: #fff; }
             .report-container { border-radius: 0; border: none; box-shadow: none; }
-            .header { padding: 1.25rem; }
-            .content { padding: 1rem; }
-            .two-cols { grid-template-columns: 1fr; }
-            
-            /* Exibe a barra flutuante */
-            .mobile-action-bar { display: flex; }
-            /* Esconde os botões e total original da tabela */
-            .table-footer { display: none; }
-
-            /* TRANSFORMA TABELA EM CARDS NO MOBILE */
+            .header { padding: 1.25rem; } .content { padding: 1rem; } .two-cols { grid-template-columns: 1fr; }
+            .toggle-header-btn { display: flex; }
+            .mobile-action-bar { display: flex; } .table-footer { display: none; }
             .log-table, .log-table tbody, .log-table tr, .log-table td { display: block; width: 100% !important; min-width: 0 !important; }
             .log-table thead { display: none; }
-            .log-table tr { 
-                margin-bottom: 1rem; 
-                border: 1px solid var(--border); 
-                border-radius: 16px; 
-                padding: 12px; 
-                background: #f8fafc;
-                position: relative;
-            }
-            .log-table td { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                padding: 6px 0; 
-                border-bottom: 1px dashed #e2e8f0;
-                text-align: right;
-            }
+            .log-table tr { margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 16px; padding: 12px; background: #f8fafc; position: relative; }
+            .log-table td { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; text-align: right; }
             .log-table td:last-child { border-bottom: none; }
-            /* Cria os labels baseados no data-label */
-            .log-table td::before {
-                content: attr(data-label);
-                font-weight: 700;
-                color: var(--primary-dark);
-                font-size: 0.8rem;
-                text-transform: uppercase;
-                margin-right: 12px;
-                text-align: left;
-                flex-shrink: 0;
-            }
-            /* Ajuste dos inputs para preencher a largura e evitar zoom no iOS */
-            .log-table input, .log-table select {
-                flex-grow: 1;
-                text-align: right;
-                background: #fff;
-                font-size: 16px !important; /* Previne zoom no iOS */
-                padding: 8px;
-                max-width: 60%;
-            }
+            .log-table td::before { content: attr(data-label); font-weight: 700; color: var(--primary-dark); font-size: 0.8rem; text-transform: uppercase; margin-right: 12px; text-align: left; flex-shrink: 0; }
+            .log-table input, .log-table select { flex-grow: 1; text-align: right; background: #fff; font-size: 16px !important; padding: 8px; max-width: 60%; }
             .local-input { text-align: right !important; }
-            /* Botão delete */
             .btn-delete { position: absolute; top: 10px; right: 10px; background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; }
-            /* Esconde label do delete */
-            td:nth-child(9)::before { display: none; }
-            td:nth-child(9) { justify-content: flex-end; border-bottom: none; padding-top: 0; }
-            /* Km rodado destaque */
-            .km-rodado { font-size: 1rem; padding: 6px 12px; }
-
-            .btn-pdf { margin-top: 1rem; }
+            td:nth-child(9)::before { display: none; } td:nth-child(9) { justify-content: flex-end; border-bottom: none; padding-top: 0; }
+            .km-rodado { font-size: 1rem; padding: 6px 12px; } .btn-pdf { margin-top: 1rem; }
         }
     </style>
 </head>
 <body>
 <div class="report-container">
-    <div class="header">
+    <div class="header" id="mainHeader">
         <div class="header-top">
             <h1><i class="fas fa-ambulance"></i> Sistema de Deslocamento</h1>
-            <div class="month-selector">
-                <i class="far fa-calendar-alt"></i>
-                <select id="mesSelect"></select>
-                <input type="number" id="anoSelect" style="width: 70px;" value="2026">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="month-selector"><i class="far fa-calendar-alt"></i><select id="mesSelect"></select><input type="number" id="anoSelect" style="width:70px;" value="2026"></div>
+                <button id="toggleHeaderBtn" class="toggle-header-btn"><i class="fas fa-chevron-up"></i></button>
             </div>
         </div>
         <div class="info-grid">
             <div class="info-item"><label>🏥 Unidade</label><input type="text" id="unidadeHeader" value="HCI"></div>
             <div class="info-item"><label>👨‍⚕️ Condutor</label><input type="text" id="condutorHeader" value="Anderson Martins"></div>
-            <div class="info-item">
-                <label>⏱️ Plantão</label>
-                <select id="plantaoHeader">
-                    <option value="SD 12hs">SD 12hs</option>
-                    <option value="SN 12hs">SN 12hs</option>
-                    <option value="DN 24hs">DN 24hs</option>
-                </select>
-            </div>
+            <div class="info-item"><label>⏱️ Plantão</label><select id="plantaoHeader"><option value="SD 12hs">SD 12hs</option><option value="SN 12hs">SN 12hs</option><option value="DN 24hs">DN 24hs</option></select></div>
             <div class="info-item"><label>🚑 Ambulância</label><input type="text" id="ambulanciaHeader" value="Ducato"></div>
             <div class="info-item"><label>🔖 Placa</label><input type="text" id="placaHeader" value="RKD-5A25"></div>
+            <div class="info-item"><label>🔢 Km Inicial</label><input type="number" id="kmInicialHeader" value="" placeholder="Ex: 62000" step="0.1"></div>
         </div>
     </div>
     <div class="content">
@@ -201,13 +114,10 @@
             <div class="card-title"><i class="fas fa-list-ol"></i> Registro de Deslocamentos</div>
             <div class="table-wrapper">
                 <table class="log-table" id="logTable">
-                    <thead>
-                        <tr><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th><th style="width:30px"></th></tr>
-                    </thead>
+                    <thead><tr><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th><th style="width:30px"></th></tr></thead>
                     <tbody id="tableBody"></tbody>
                 </table>
             </div>
-            <!-- Rodapé da tabela visível apenas no Desktop -->
             <div class="table-footer">
                 <div class="add-buttons">
                     <button class="btn-add btn-add-saida" id="addSaidaBtn"><i class="fas fa-sign-out-alt"></i> Nova Saída</button>
@@ -218,14 +128,13 @@
         </div>
         <div class="two-cols">
             <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="3" placeholder="Intercorrências, condições da via..."></textarea></div>
-            <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura do Condutor</div><canvas id="signCanvas" width="400" height="110"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
+            <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura</div><canvas id="signCanvas" width="400" height="110" style="width:100%;height:110px;"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
         </div>
-        <div class="footer"><button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div>
-        <div class="small-note" style="font-size:0.7rem; text-align:center; margin-top:1rem; padding-bottom: 1rem;"><i class="fas fa-save"></i> Dados salvos automaticamente</div>
+        <div class="footer"><button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)</button></div>
+        <div class="small-note" style="font-size:0.7rem; text-align:center; margin-top:1rem; padding-bottom:1rem;"><i class="fas fa-save"></i> Dados salvos localmente. Em breve sincronização com Google Sheets.</div>
     </div>
 </div>
 
-<!-- Barra Flutuante Mobile -->
 <div class="mobile-action-bar">
     <button class="btn-add btn-add-saida" id="addSaidaBtnMobile"><i class="fas fa-sign-out-alt"></i> Saída</button>
     <button class="btn-add btn-add-retorno" id="addRetornoBtnMobile"><i class="fas fa-undo-alt"></i> Retorno</button>
@@ -234,7 +143,7 @@
 <div class="preview-overlay" id="previewOverlay">
     <div class="preview-container">
         <div class="preview-toolbar">
-            <h3><i class="fas fa-eye"></i> Relatório PDF</h3>
+            <h3><i class="fas fa-table"></i> Pré-visualização (Planilha)</h3>
             <div class="preview-actions">
                 <button class="btn-p dl" id="btnDownloadPdf"><i class="fas fa-download"></i> Baixar</button>
                 <button class="btn-p pr" id="btnPrintPdf"><i class="fas fa-print"></i> Imprimir</button>
@@ -254,7 +163,6 @@
         const nomeMes = (m) => ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1];
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); };
-        
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
         const tbody = document.getElementById('tableBody');
@@ -265,9 +173,12 @@
         const ambulanciaEl = document.getElementById('ambulanciaHeader');
         const placaEl = document.getElementById('placaHeader');
         const plantaoEl = document.getElementById('plantaoHeader');
+        const kmInicialEl = document.getElementById('kmInicialHeader');
         const nomeLegivelEl = document.getElementById('nomeLegivel');
         const mesSelect = document.getElementById('mesSelect');
         const anoSelect = document.getElementById('anoSelect');
+        
+        document.getElementById('toggleHeaderBtn').addEventListener('click', () => { document.getElementById('mainHeader').classList.toggle('header-collapsed'); });
         
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
         const hojeData = new Date(); mesSelect.value = hojeData.getMonth() + 1; anoSelect.value = hojeData.getFullYear();
@@ -298,73 +209,57 @@
         }
         function updateTotalKm() { let total = 0; document.querySelectorAll('#tableBody tr .km-rodado-val.km-ok').forEach(el => { let v = parseFloat(el.innerText); if(!isNaN(v)) total += v; }); totalSpan.innerText = total.toFixed(1); }
         function getUltimoKmChegada() { const rows = Array.from(tbody.querySelectorAll('tr')); for(let i = rows.length-1; i >= 0; i--) { const kmC = rows[i].querySelector('.km-chegada'); if(kmC && kmC.value) return kmC.value; } return ''; }
+        function getKmReferencia() { return getUltimoKmChegada() || kmInicialEl.value || ''; }
         function inverterLocal(localStr) { if(!localStr) return ''; if(localStr.includes('→')) { let partes = localStr.split('→'); if(partes.length >= 2) return partes[1].trim() + ' → ' + partes[0].trim(); } return localStr; }
         function getLocalPadrao(tipo) { let unidade = unidadeEl.value.trim() || 'HCI'; if(tipo === 'saida') return `🏥 ${unidade} → 🏥 Destino`; return `🏥 Origem → 🏥 ${unidade}`; }
         
         function criarLinha(data = '', tipo = 'saida', local = '', horaSaida = '', kmSaida = '', horaChegada = '', kmChegada = '') {
             const periodo = getPeriodo(); if(!data) data = hoje(); const tr = document.createElement('tr');
-            
-            // Adicionado data-label para exibição mobile
-            const mkTd = (label, content, cssClass = '') => {
-                const td = document.createElement('td'); td.setAttribute('data-label', label); if(cssClass) td.className = cssClass; td.appendChild(content); return td;
-            };
-
+            const mkTd = (label, content) => { const td = document.createElement('td'); td.setAttribute('data-label', label); td.appendChild(content); return td; };
             const inpData = document.createElement('input'); inpData.type = 'date'; inpData.value = data; inpData.min = periodo.min; inpData.max = periodo.max; tr.appendChild(mkTd('Data', inpData));
-            
             const sel = document.createElement('select'); sel.className = 'tipo-select'; sel.innerHTML = '<option value="saida">🚑 Saída</option><option value="retorno">🏥 Retorno</option>'; sel.value = tipo; tr.appendChild(mkTd('Tipo', sel));
-            
             const inpHS = document.createElement('input'); inpHS.type = 'time'; inpHS.className = 'time-input hora-saida'; inpHS.value = horaSaida; tr.appendChild(mkTd('H Saída', inpHS));
             const inpKmS = document.createElement('input'); inpKmS.type = 'number'; inpKmS.className = 'km-input km-saida'; inpKmS.value = kmSaida; inpKmS.step = '0.1'; tr.appendChild(mkTd('Km Saída', inpKmS));
             const inpLocal = document.createElement('input'); inpLocal.type = 'text'; inpLocal.className = 'local-input'; inpLocal.placeholder = 'Origem → Destino'; inpLocal.value = local; tr.appendChild(mkTd('Local', inpLocal));
             const inpHC = document.createElement('input'); inpHC.type = 'time'; inpHC.className = 'time-input hora-chegada'; inpHC.value = horaChegada; tr.appendChild(mkTd('H Chegada', inpHC));
             const inpKmC = document.createElement('input'); inpKmC.type = 'number'; inpKmC.className = 'km-input km-chegada'; inpKmC.value = kmChegada; inpKmC.step = '0.1'; tr.appendChild(mkTd('Km Chegada', inpKmC));
-            
             const span = document.createElement('span'); span.className = 'km-rodado-val km-rodado km-ok'; span.innerText = '0.0'; tr.appendChild(mkTd('Km Rodado', span));
-            
             const btnDel = document.createElement('button'); btnDel.innerHTML = '<i class="fas fa-trash-alt"></i>'; btnDel.className = 'btn-delete'; tr.appendChild(mkTd('', btnDel));
-            
             inpKmS.addEventListener('input', () => calcularKmRodado(tr)); inpKmC.addEventListener('input', () => calcularKmRodado(tr));
             [inpHS, inpHC, inpLocal, inpData].forEach(el => el.addEventListener('change', () => saveToLocal()));
-            
             sel.addEventListener('change', () => {
-                let ultimoKm = getUltimoKmChegada();
+                let kmRef = getKmReferencia();
                 if(sel.value === 'retorno') {
-                    inpHS.value = getHoraAtual();
-                    if(ultimoKm && !inpKmS.value) inpKmS.value = ultimoKm;
-                    if(ultimoKm && !inpKmC.value) inpKmC.value = ultimoKm.substring(0, 3);
+                    inpHS.value = getHoraAtual(); if(kmRef && !inpKmS.value) inpKmS.value = kmRef; if(kmRef && !inpKmC.value) inpKmC.value = kmRef.substring(0, 3);
                     let linhas = Array.from(tbody.querySelectorAll('tr')); let ultLocal = linhas.length > 1 ? linhas[linhas.length-2]?.querySelector('.local-input')?.value : null;
                     inpLocal.value = ultLocal ? inverterLocal(ultLocal) : getLocalPadrao('retorno');
                 } else {
-                    inpHS.value = getHoraAtual();
-                    if(ultimoKm && !inpKmS.value) inpKmS.value = ultimoKm;
-                    if(ultimoKm && !inpKmC.value) inpKmC.value = ultimoKm.substring(0, 3);
+                    inpHS.value = getHoraAtual(); if(kmRef && !inpKmS.value) inpKmS.value = kmRef; if(kmRef && !inpKmC.value) inpKmC.value = kmRef.substring(0, 3);
                     if(!inpLocal.value || !inpLocal.value.includes('→')) inpLocal.value = getLocalPadrao('saida');
                 }
                 calcularKmRodado(tr); saveToLocal();
             });
-            
             btnDel.addEventListener('click', () => { tr.remove(); updateTotalKm(); saveToLocal(); showToast('Registro removido'); });
             calcularKmRodado(tr); return tr;
         }
         
         function adicionarLinha(tipo) {
-            let ultimoKm = getUltimoKmChegada(); let local = '', hS = '', kmS = ultimoKm, kmC = ultimoKm ? ultimoKm.substring(0, 3) : '';
+            let kmRef = getKmReferencia(); let local = '', hS = '', kmS = kmRef, kmC = kmRef ? kmRef.substring(0, 3) : '';
             hS = getHoraAtual();
-            if(tipo === 'saida') { local = getLocalPadrao('saida'); } 
-            else { let linhas = Array.from(tbody.querySelectorAll('tr')); let ultLocal = linhas.length ? linhas[linhas.length-1].querySelector('.local-input')?.value : null; local = ultLocal ? inverterLocal(ultLocal) : getLocalPadrao('retorno'); }
+            if(tipo === 'saida') { local = getLocalPadrao('saida'); } else { let linhas = Array.from(tbody.querySelectorAll('tr')); let ultLocal = linhas.length ? linhas[linhas.length-1].querySelector('.local-input')?.value : null; local = ultLocal ? inverterLocal(ultLocal) : getLocalPadrao('retorno'); }
             tbody.appendChild(criarLinha(hoje(), tipo, local, hS, kmS, '', kmC)); updateTotalKm(); saveToLocal(); showToast(tipo === 'saida' ? 'Saída adicionada' : 'Retorno adicionado');
         }
         
         function saveToLocal() {
             let registros = []; document.querySelectorAll('#tableBody tr').forEach(tr => { registros.push({ data: tr.querySelector('input[type="date"]')?.value || '', tipo: tr.querySelector('.tipo-select')?.value || '', horaSaida: tr.querySelector('.hora-saida')?.value || '', kmSaida: tr.querySelector('.km-saida')?.value || '', local: tr.querySelector('.local-input')?.value || '', horaChegada: tr.querySelector('.hora-chegada')?.value || '', kmChegada: tr.querySelector('.km-chegada')?.value || '' }); });
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_final', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
+            localStorage.setItem('sistemaDeslocamentoHCI_v2', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
         }
         
         function loadFromLocal() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_final'); if(!raw) return false;
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v2'); if(!raw) return false;
             try {
-                let d = JSON.parse(raw); condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
+                let d = JSON.parse(raw); condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
                 tbody.innerHTML = '';
                 if(d.rows && d.rows.length) { d.rows.forEach(r => { tbody.appendChild(criarLinha(r.data, r.tipo, r.local, r.horaSaida, r.kmSaida, r.horaChegada, r.kmChegada)); }); } else { carregarExemplos(); }
@@ -378,39 +273,185 @@
         let currentPdfUrl = null; const previewOverlay = document.getElementById('previewOverlay'); const previewContent = document.getElementById('previewContent');
         function fecharPreview() { previewOverlay.classList.remove('open'); previewContent.innerHTML = ''; if(currentPdfUrl) { URL.revokeObjectURL(currentPdfUrl); currentPdfUrl = null; } }
         
-        async function gerarPDF() {
-            const btn = document.getElementById('pdfBtn'); btn.classList.add('loading'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PDF...';
-            try {
-                let linhas = []; document.querySelectorAll('#tableBody tr').forEach(tr => { linhas.push({ data: tr.querySelector('input[type="date"]')?.value || '', tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? '🚑 SAÍDA' : '🏥 RETORNO', hS: tr.querySelector('.hora-saida')?.value || '', kmS: tr.querySelector('.km-saida')?.value || '0', local: tr.querySelector('.local-input')?.value || '', hC: tr.querySelector('.hora-chegada')?.value || '', kmC: tr.querySelector('.km-chegada')?.value || '0', kmR: tr.querySelector('.km-rodado-val')?.innerText || '0', erro: tr.querySelector('.km-rodado-val')?.classList.contains('km-erro') || false }); });
-                let totalKm = totalSpan.innerText; let dataHora = new Date().toLocaleString('pt-BR'); let assinaturaImg = canvas.toDataURL('image/png'); let mesNome = nomeMes(parseInt(mesSelect.value)); let ano = anoSelect.value;
-                let linhasHTML = '';
-                linhas.forEach((l, idx) => { let bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc'; let kmRodStyle = l.erro ? 'background:#fee2e2;color:#b91c1c;font-weight:bold;' : 'background:#dcfce7;color:#166534;font-weight:bold;'; linhasHTML += `<tr style="background:${bg}; border-bottom:1px solid #e2e8f0;"><td style="padding:8px 5px; font-size:9px; text-align:center;">${idx+1}</td><td style="padding:8px 5px; font-size:9px; text-align:center;">${formatDateBR(l.data)}</td><td style="padding:8px 5px; font-size:9px; text-align:center;">${l.tipo}</td><td style="padding:8px 5px; font-size:9px; text-align:center;">${l.hS}</td><td style="padding:8px 5px; font-size:9px; text-align:right; padding-right:10px;">${l.kmS}</td><td style="padding:8px 8px; font-size:9px; text-align:left;">${l.local}</td><td style="padding:8px 5px; font-size:9px; text-align:center;">${l.hC}</td><td style="padding:8px 5px; font-size:9px; text-align:right; padding-right:10px;">${l.kmC}</td><td style="padding:8px 5px; font-size:9px; text-align:center;"><span style="${kmRodStyle} padding:3px 8px; border-radius:20px;">${l.kmR}</span></td></tr>`; });
-                let obsHTML = observacaoEl.value ? `<div style="margin-top:12px; border:1px solid #e2e8f0; border-radius:12px;"><div style="background:#f1f5f9; padding:8px 12px; font-weight:700; font-size:10px;">📋 OBSERVAÇÕES</div><div style="padding:12px; font-size:9px;">${observacaoEl.value.replace(/\n/g,'<br>')}</div></div>` : '';
-                let pdfHtml = `<div style="font-family: 'Inter', Helvetica, sans-serif; background: white; padding: 20px 24px; max-width: 1100px; margin:0 auto;"><div style="background: linear-gradient(135deg, #0a3d4f, #0e5a77); color:white; padding: 16px 24px; border-radius: 14px; margin-bottom: 20px; display:flex; justify-content:space-between;"><div><span style="font-size: 11px; opacity:0.8;">🚑 ${unidadeEl.value}</span><h2 style="margin:4px 0 0; font-weight:800;">SISTEMA DE DESLOCAMENTO</h2></div><div style="text-align:right;"><span style="font-size: 10px;">Período: ${mesNome} / ${ano}</span><br><span style="font-size: 9px;">Relatório: ${dataHora}</span></div></div><div style="display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; background:#f8fafc; padding: 10px 14px; border-radius: 14px; margin-bottom: 18px; border:1px solid #e2e8f0;"><div><div style="font-size: 7px; text-transform:uppercase;">Condutor</div><strong style="font-size:11px;">${condutorEl.value}</strong></div><div><div style="font-size: 7px; text-transform:uppercase;">Plantão</div><strong style="font-size:11px;">${plantaoEl.value}</strong></div><div><div style="font-size: 7px; text-transform:uppercase;">Ambulância</div><strong style="font-size:11px;">${ambulanciaEl.value}</strong></div><div><div style="font-size: 7px; text-transform:uppercase;">Placa</div><strong style="font-size:11px;">${placaEl.value}</strong></div></div><table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; font-size:9px;"><thead><tr style="background:#0f2b3d; color:white;"><th style="padding:8px 4px;">#</th><th style="padding:8px 4px;">Data</th><th style="padding:8px 4px;">Tipo</th><th style="padding:8px 4px;">H Saída</th><th style="padding:8px 4px;">Km Saída</th><th style="padding:8px 8px;">Local / Destino</th><th style="padding:8px 4px;">H Chegada</th><th style="padding:8px 4px;">Km Chegada</th><th style="padding:8px 4px;">Km Rod.</th></tr></thead><tbody>${linhasHTML}</tbody></table><div style="display:flex; justify-content:flex-end; margin: 12px 0;"><div style="background:#0f2b3d; color:white; padding:6px 18px; border-radius:40px; font-weight:800;">TOTAL GERAL: ${totalKm} km</div></div>${obsHTML}<div style="border:1px solid #e2e8f0; border-radius:12px; margin-top:20px;"><div style="background:#f1f5f9; padding:8px 14px; font-weight:700;">✍️ ASSINATURA DO CONDUTOR</div><div style="display:flex; justify-content:space-between; padding:16px; gap: 12px; flex-wrap:wrap;"><img src="${assinaturaImg}" style="max-height:80px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; padding:4px;"><div style="border-left:1px solid #ccc; padding-left:20px;"><span style="font-size:8px; color:#475569;">NOME LEGÍVEL</span><br><strong>${nomeLegivelEl.value}</strong><br><span style="font-size:8px;">Data: ${dataHora}</span></div></div></div><div style="text-align:center; font-size:7px; color:#94a3b8; margin-top:16px;">Documento gerado eletronicamente - Sistema de Deslocamento</div></div>`;
-                
-                const tempDiv = document.createElement('div'); tempDiv.innerHTML = pdfHtml; tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.top = '0'; document.body.appendChild(tempDiv);
-                const opt = { margin: [0.4, 0.4, 0.4, 0.4], filename: `Deslocamento_${condutorEl.value.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
-                const pdfBlob = await html2pdf().set(opt).from(tempDiv.firstElementChild).outputPdf('blob'); tempDiv.remove();
-                if(currentPdfUrl) URL.revokeObjectURL(currentPdfUrl); currentPdfUrl = URL.createObjectURL(pdfBlob);
-                
-                // Mobile: Baixar direto (iframe preview buga em mobile)
-                if(isMobile) {
-                    const a = document.createElement('a'); a.href = currentPdfUrl; a.download = opt.filename; a.click();
-                    showToast('PDF baixado com sucesso!');
-                } else {
-                    previewContent.innerHTML = `<iframe src="${currentPdfUrl}" frameborder="0" style="width:100%; height:100%;"></iframe>`; previewOverlay.classList.add('open');
-                }
-            } catch(err) { console.error(err); showToast('Erro ao gerar PDF: ' + err.message); } finally { btn.classList.remove('loading'); btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório PDF'; }
-        }
+async function gerarPDF() {
+    const btn = document.getElementById('pdfBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PDF...';
+
+    try {
+        // Coleta dos dados atuais
+        let linhas = [];
+        document.querySelectorAll('#tableBody tr').forEach(tr => {
+            linhas.push({
+                data: tr.querySelector('input[type="date"]')?.value || '',
+                tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? 'SAÍDA' : 'RETORNO',
+                hS: tr.querySelector('.hora-saida')?.value || '',
+                kmS: tr.querySelector('.km-saida')?.value || '0',
+                local: tr.querySelector('.local-input')?.value || '',
+                hC: tr.querySelector('.hora-chegada')?.value || '',
+                kmC: tr.querySelector('.km-chegada')?.value || '0',
+                kmR: tr.querySelector('.km-rodado-val')?.innerText || '0',
+                erro: tr.querySelector('.km-rodado-val')?.classList.contains('km-erro') || false
+            });
+        });
+
+        const totalKm = totalSpan.innerText;
+        const dataHora = new Date().toLocaleString('pt-BR');
+        const assinaturaImg = canvas.toDataURL('image/png');
+        const mesNome = nomeMes(parseInt(mesSelect.value));
+        const ano = anoSelect.value;
+
+        // Geração do HTML do relatório (estilo Google Sheets)
+        let linhasHTML = '';
+        linhas.forEach((l, idx) => {
+            const bg = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
+            const tipoIcon = l.tipo === 'SAÍDA' ? '🚑' : '🏥';
+            const kmRodStyle = l.erro ? 'color:#cc0000; font-weight:bold;' : 'color:#0b8043; font-weight:bold;';
+            linhasHTML += `
+                <tr style="background:${bg}">
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${idx+1}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${formatDateBR(l.data)}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${tipoIcon} ${l.tipo}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${l.hS}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:right; font-size:8pt;">${l.kmS}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:left; font-size:8pt;">${l.local}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${l.hC}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:right; font-size:8pt;">${l.kmC}</td>
+                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:right; font-size:8pt; ${kmRodStyle}">${l.kmR}</td>
+                </tr>
+            `;
+        });
+
+        const obsHTML = observacaoEl.value
+            ? `<tr><td colspan="9" style="border:1px solid #e0e0e0; padding:6px; font-size:8pt; background:#f8f9fa"><strong>📋 OBSERVAÇÕES:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</td></tr>`
+            : '';
+
+        const pdfHtml = `
+            <div style="font-family: 'Inter', Arial, sans-serif; padding: 12px; color: #202124;">
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 16pt; font-weight: 800; color: #0e5a77; margin-bottom: 4px;">Relatório de Deslocamento</div>
+                    <div style="font-size: 9pt; color: #5f6368;">Hospital HCI · Controle de Frota · ${mesNome} / ${ano}</div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9pt;">
+                    <tr>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Condutor</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; width:35%;">${condutorEl.value}</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Plantão</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; width:35%;">${plantaoEl.value}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Ambulância</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${ambulanciaEl.value}</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Placa</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${placaEl.value}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Km Inicial</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${kmInicialEl.value || '-'}</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Gerado em</td>
+                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${dataHora}</td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f1f3f4; border-top: 2px solid #0e5a77; border-bottom: 2px solid #0e5a77;">
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">#</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">Data</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">Tipo</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">H Saída</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:right;">Km Saída</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:left;">Local / Destino</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">H Cheg.</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:right;">Km Cheg.</th>
+                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:right;">Km Rod.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${linhasHTML}
+                        <tr style="background-color: #f1f3f4; border-top: 2px solid #0e5a77;">
+                            <td colspan="8" style="padding:6px; border:1px solid #dadce0; text-align:right; font-size:9pt; font-weight:700;">TOTAL GERAL</td>
+                            <td style="padding:6px; border:1px solid #dadce0; text-align:right; font-size:10pt; font-weight:800; color:#0b8043;">${totalKm}</td>
+                        </tr>
+                        ${obsHTML}
+                    </tbody>
+                </table>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 9pt;">
+                    <tr>
+                        <td style="padding: 6px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Assinatura</td>
+                        <td style="padding: 6px; border:1px solid #dadce0; width:35%;"><img src="${assinaturaImg}" style="max-height: 50px;"></td>
+                        <td style="padding: 6px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Nome Legível</td>
+                        <td style="padding: 6px; border:1px solid #dadce0; width:35%; font-weight:bold;">${nomeLegivelEl.value}</td>
+                    </tr>
+                </table>
+                <div style="font-size: 7pt; color: #80868b; text-align: center; margin-top: 20px;">
+                    Documento gerado pelo Sistema de Deslocamento HCI
+                </div>
+            </div>
+        `;
+
+        // Cria contêiner temporário fora da tela para renderização
+        const printContainer = document.createElement('div');
+        printContainer.innerHTML = pdfHtml;
+        printContainer.style.position = 'absolute';
+        printContainer.style.top = '-9999px';
+        printContainer.style.left = '-9999px';
+        printContainer.style.width = '1120px';
+        printContainer.style.background = 'white';
+        printContainer.style.zIndex = '-1000';
+        document.body.appendChild(printContainer);
+
+        // Aguarda o carregamento de todas as imagens (assinatura)
+        const images = printContainer.querySelectorAll('img');
+        await Promise.all(Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+        }));
+
+        // Pequeno delay para garantir o layout
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        const opt = {
+            margin: [0.3, 0.3, 0.3, 0.3],
+            filename: `Deslocamento_${condutorEl.value.replace(/\s/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+
+        const pdfObj = await html2pdf().set(opt).from(printContainer).toPdf().get('pdf');
+        const pdfBlob = pdfObj.output('blob');
+
+        // Remove o contêiner temporário
+        document.body.removeChild(printContainer);
+
+        // Revoga URL antiga se existir
+        if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
+        currentPdfUrl = URL.createObjectURL(pdfBlob);
+
+        // 🔥 SEMPRE exibe a pré-visualização (em qualquer dispositivo)
+        previewContent.innerHTML = `<iframe src="${currentPdfUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
+        previewOverlay.classList.add('open');
+        showToast('✅ PDF gerado com sucesso!');
+
+    } catch (err) {
+        console.error('Erro no PDF:', err);
+        showToast('❌ Falha ao gerar o PDF. Tente novamente.');
+    } finally {
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)';
+    }
+}
         
-        // Eventos Desktop e Mobile
         document.getElementById('addSaidaBtn').addEventListener('click', () => adicionarLinha('saida'));
         document.getElementById('addRetornoBtn').addEventListener('click', () => adicionarLinha('retorno'));
         document.getElementById('addSaidaBtnMobile').addEventListener('click', () => adicionarLinha('saida'));
         document.getElementById('addRetornoBtnMobile').addEventListener('click', () => adicionarLinha('retorno'));
-        
         document.getElementById('pdfBtn').addEventListener('click', gerarPDF);
-        [condutorEl, unidadeEl, ambulanciaEl, placaEl, nomeLegivelEl, observacaoEl].forEach(el => { el.addEventListener('input', () => saveToLocal()); });
+        
+        [condutorEl, unidadeEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { el.addEventListener('input', () => saveToLocal()); });
         [plantaoEl, mesSelect].forEach(el => { el.addEventListener('change', () => saveToLocal()); });
         window.addEventListener('beforeunload', () => saveToLocal());
         
