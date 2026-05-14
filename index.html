@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Sistema de Deslocamento - 🚑  Ambulância Lefe</title>
+    <title>Sistema de Deslocamento - Ambulância HCI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; }
+        :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; --base: #dc2626; }
         body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 1rem; padding-bottom: 80px; }
         .report-container { max-width: 1400px; margin: 0 auto; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
         .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 1.5rem 2rem; color: #fff; transition: padding 0.3s ease; }
@@ -42,10 +42,11 @@
         .btn-delete { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1rem; padding: 6px; border-radius: 6px; }
         .btn-delete:hover { color: var(--danger); background: #fee2e2; }
         .table-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 12px; }
-        .add-buttons { display: flex; gap: 12px; }
+        .add-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
         .btn-add { border: none; color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-family: 'Inter'; }
         .btn-add-saida { background: var(--primary); }
         .btn-add-retorno { background: var(--success); }
+        .btn-add-base { background: var(--base); }
         .total-km { background: #eff6ff; padding: 8px 16px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .two-cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
         .obs-box textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.85rem; resize: vertical; background: #f8fafc; }
@@ -86,7 +87,7 @@
 <div class="report-container">
     <div class="header" id="mainHeader">
         <div class="header-top">
-            <h1><i class="fas fa-ambulance"></i> Deslocamento VTR 🚑 </h1>
+            <h1><i class="fas fa-ambulance"></i> Sistema de Deslocamento</h1>
             <div style="display:flex; align-items:center; gap:10px;">
                 <div class="month-selector"><i class="far fa-calendar-alt"></i><select id="mesSelect"></select><input type="number" id="anoSelect" style="width:70px;" value="2026"></div>
                 <button id="toggleHeaderBtn" class="toggle-header-btn"><i class="fas fa-chevron-up"></i></button>
@@ -114,6 +115,7 @@
                 <div class="add-buttons">
                     <button class="btn-add btn-add-saida" id="addSaidaBtn"><i class="fas fa-sign-out-alt"></i> Nova Saída</button>
                     <button class="btn-add btn-add-retorno" id="addRetornoBtn"><i class="fas fa-undo-alt"></i> Novo Retorno</button>
+                    <button class="btn-add btn-add-base" id="addBaseBtn"><i class="fas fa-home"></i> Base (Unidade)</button>
                 </div>
                 <div class="total-km"><i class="fas fa-tachometer-alt"></i> Total KM: <strong id="totalKmValue">0</strong> km</div>
             </div>
@@ -133,6 +135,7 @@
 <div class="mobile-action-bar">
     <button class="btn-add btn-add-saida" id="addSaidaBtnMobile"><i class="fas fa-sign-out-alt"></i> Saída</button>
     <button class="btn-add btn-add-retorno" id="addRetornoBtnMobile"><i class="fas fa-undo-alt"></i> Retorno</button>
+    <button class="btn-add btn-add-base" id="addBaseBtnMobile"><i class="fas fa-home"></i> Base</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -140,8 +143,7 @@
 <script>
     (function() {
         // ======================= CONFIGURAÇÃO DO GOOGLE SHEETS =======================
-        // 🔧 SUBSTITUA PELA URL DO SEU WEB APP (criado no Google Apps Script)
-        const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzOTc6o2nRKMlIxacAD3W1aqChZl2T8XirU8lZujfglrH81Qu6DCiUjz9U8exrLfFzKVA/exec"; // <--- ALTERE AQUI
+        const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/SEU_ID_AQUI/exec"; // <--- ALTERE AQUI
         
         // ======================= FUNÇÕES AUXILIARES =======================
         const hoje = () => new Date().toISOString().slice(0,10);
@@ -198,10 +200,60 @@
         function updateTotalKm() { let total = 0; document.querySelectorAll('#tableBody tr .km-rodado-val.km-ok').forEach(el => { let v = parseFloat(el.innerText); if(!isNaN(v)) total += v; }); totalSpan.innerText = total.toFixed(1); }
         function getUltimoKmChegada() { const rows = Array.from(tbody.querySelectorAll('tr')); for(let i = rows.length-1; i >= 0; i--) { const kmC = rows[i].querySelector('.km-chegada'); if(kmC && kmC.value) return kmC.value; } return ''; }
         function getKmReferencia() { return getUltimoKmChegada() || kmInicialEl.value || ''; }
-        function inverterLocal(localStr) { if(!localStr) return ''; if(localStr.includes('→')) { let partes = localStr.split('→'); if(partes.length >= 2) return partes[1].trim() + ' → ' + partes[0].trim(); } return localStr; }
-        function getLocalPadrao(tipo) { let unidade = unidadeEl.value.trim() || 'HCI'; if(tipo === 'saida') return `🏥 ${unidade} → 🏥 Destino`; return `🏥 Origem → 🏥 ${unidade}`; }
         
-        // Criar linha da tabela
+        // ======================= FUNÇÕES PARA LOCAL =======================
+        function limparNomeLocal(str) {
+            if (!str) return '';
+            return str.replace(/🏥/g, '').trim();
+        }
+        
+        function getUltimoDestinoLimpo() {
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) return null;
+            const ultimoLocal = rows[rows.length-1].querySelector('.local-input')?.value || '';
+            if (!ultimoLocal.includes('→')) return limparNomeLocal(ultimoLocal);
+            const partes = ultimoLocal.split('→');
+            if (partes.length >= 2) return limparNomeLocal(partes[1]);
+            return limparNomeLocal(ultimoLocal);
+        }
+        
+        function getLocalSaida() {
+            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+            const ultimoDestino = getUltimoDestinoLimpo();
+            if (!ultimoDestino) {
+                return `🏥 ${unidade} → `;
+            } else {
+                return `🏥 ${ultimoDestino} →🏥  `;
+            }
+        }
+        
+        function getLocalRetorno() {
+            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) return `🏥 Origem → 🏥 ${unidade}`;
+            const ultimoLocal = rows[rows.length-1].querySelector('.local-input')?.value || '';
+            if (!ultimoLocal.includes('→')) {
+                const origem = limparNomeLocal(ultimoLocal);
+                return `🏥 ${origem} → 🏥 ${unidade}`;
+            }
+            const partes = ultimoLocal.split('→');
+            const origem = limparNomeLocal(partes[0]);
+            const destino = limparNomeLocal(partes[1]);
+            return `🏥 ${destino} → 🏥 ${origem}`;
+        }
+        
+        // NOVA FUNÇÃO: Retorno à Base (último destino → unidade)
+        function getLocalBase() {
+            const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
+            const ultimoDestino = getUltimoDestinoLimpo();
+            if (!ultimoDestino) {
+                // Se não há registros, base partindo da própria unidade? Melhor deixar "🏥 ${unidade} → 🏥 ${unidade}" (deslocamento nulo)
+                return `🏥 ${unidade} → 🏥 ${unidade}`;
+            }
+            return `🏥 ${ultimoDestino} → 🏥 ${unidade}`;
+        }
+        
+        // ======================= CRIAÇÃO DE LINHA =======================
         function criarLinha(data = '', tipo = 'saida', local = '', horaSaida = '', kmSaida = '', horaChegada = '', kmChegada = '') {
             const periodo = getPeriodo(); if(!data) data = hoje(); const tr = document.createElement('tr');
             const mkTd = (label, content) => { const td = document.createElement('td'); td.setAttribute('data-label', label); td.appendChild(content); return td; };
@@ -220,11 +272,10 @@
                 let kmRef = getKmReferencia();
                 if(sel.value === 'retorno') {
                     inpHS.value = getHoraAtual(); if(kmRef && !inpKmS.value) inpKmS.value = kmRef; if(kmRef && !inpKmC.value) inpKmC.value = kmRef.substring(0, 3);
-                    let linhas = Array.from(tbody.querySelectorAll('tr')); let ultLocal = linhas.length > 1 ? linhas[linhas.length-2]?.querySelector('.local-input')?.value : null;
-                    inpLocal.value = ultLocal ? inverterLocal(ultLocal) : getLocalPadrao('retorno');
+                    inpLocal.value = getLocalRetorno();
                 } else {
                     inpHS.value = getHoraAtual(); if(kmRef && !inpKmS.value) inpKmS.value = kmRef; if(kmRef && !inpKmC.value) inpKmC.value = kmRef.substring(0, 3);
-                    if(!inpLocal.value || !inpLocal.value.includes('→')) inpLocal.value = getLocalPadrao('saida');
+                    inpLocal.value = getLocalSaida();
                 }
                 calcularKmRodado(tr); saveToLocal();
             });
@@ -233,21 +284,34 @@
         }
         
         function adicionarLinha(tipo) {
-            let kmRef = getKmReferencia(); let local = '', hS = '', kmS = kmRef, kmC = kmRef ? kmRef.substring(0, 3) : '';
-            hS = getHoraAtual();
-            if(tipo === 'saida') { local = getLocalPadrao('saida'); } else { let linhas = Array.from(tbody.querySelectorAll('tr')); let ultLocal = linhas.length ? linhas[linhas.length-1].querySelector('.local-input')?.value : null; local = ultLocal ? inverterLocal(ultLocal) : getLocalPadrao('retorno'); }
-            tbody.appendChild(criarLinha(hoje(), tipo, local, hS, kmS, '', kmC)); updateTotalKm(); saveToLocal(); showToast(tipo === 'saida' ? 'Saída adicionada' : 'Retorno adicionado');
+            let kmRef = getKmReferencia(); 
+            let local = '';
+            let hS = getHoraAtual();
+            let kmS = kmRef;
+            let kmC = kmRef ? kmRef.substring(0, 3) : '';
+            if(tipo === 'saida') {
+                local = getLocalSaida();
+            } else if (tipo === 'retorno') {
+                local = getLocalRetorno();
+            } else if (tipo === 'base') {
+                local = getLocalBase();
+            }
+            tbody.appendChild(criarLinha(hoje(), (tipo === 'base' ? 'retorno' : tipo), local, hS, kmS, '', kmC)); 
+            updateTotalKm(); 
+            saveToLocal(); 
+            let msg = tipo === 'saida' ? 'Saída adicionada' : (tipo === 'retorno' ? 'Retorno adicionado' : 'Retorno à Base adicionado');
+            showToast(msg);
         }
         
         // Salvar no localStorage
         function saveToLocal() {
             let registros = []; document.querySelectorAll('#tableBody tr').forEach(tr => { registros.push({ data: tr.querySelector('input[type="date"]')?.value || '', tipo: tr.querySelector('.tipo-select')?.value || '', horaSaida: tr.querySelector('.hora-saida')?.value || '', kmSaida: tr.querySelector('.km-saida')?.value || '', local: tr.querySelector('.local-input')?.value || '', horaChegada: tr.querySelector('.hora-chegada')?.value || '', kmChegada: tr.querySelector('.km-chegada')?.value || '' }); });
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v3', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
+            localStorage.setItem('sistemaDeslocamentoHCI_v5', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
         }
         
         function loadFromLocal() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v3'); if(!raw) return false;
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v5'); if(!raw) return false;
             try {
                 let d = JSON.parse(raw); condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
@@ -258,7 +322,13 @@
             } catch(e) { return false; }
         }
         
-        function carregarExemplos() { tbody.innerHTML = ''; let hojeStr = hoje(); tbody.appendChild(criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478')); tbody.appendChild(criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502')); updateTotalKm(); }
+        function carregarExemplos() { 
+            tbody.innerHTML = ''; 
+            let hojeStr = hoje(); 
+            tbody.appendChild(criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478')); 
+            tbody.appendChild(criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502')); 
+            updateTotalKm(); 
+        }
         
         // ======================= RELATÓRIO (SEM PÁGINA BRANCA) =======================
         async function gerarRelatorio() {
@@ -266,7 +336,6 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando relatório...';
             try {
-                // Coletar dados atuais
                 const linhas = [];
                 document.querySelectorAll('#tableBody tr').forEach(tr => {
                     linhas.push({
@@ -337,7 +406,7 @@
                     <body>
                     <div class="container">
                         <h1>📄 Relatório de Deslocamento</h1>
-                        <div class="sub">Controle de Frota Lefe Emergências Médicas · ${mesNome} / ${ano}</div>
+                        <div class="sub">Hospital HCI · Controle de Frota · ${mesNome} / ${ano}</div>
                         <table class="info-table">
                             <tr><td>Condutor</td><td>${condutorEl.value}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
                             <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
@@ -427,8 +496,10 @@
         document.getElementById('toggleHeaderBtn').addEventListener('click', () => { document.getElementById('mainHeader').classList.toggle('header-collapsed'); });
         document.getElementById('addSaidaBtn').addEventListener('click', () => adicionarLinha('saida'));
         document.getElementById('addRetornoBtn').addEventListener('click', () => adicionarLinha('retorno'));
+        document.getElementById('addBaseBtn').addEventListener('click', () => adicionarLinha('base'));
         document.getElementById('addSaidaBtnMobile').addEventListener('click', () => adicionarLinha('saida'));
         document.getElementById('addRetornoBtnMobile').addEventListener('click', () => adicionarLinha('retorno'));
+        document.getElementById('addBaseBtnMobile').addEventListener('click', () => adicionarLinha('base'));
         document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
         document.getElementById('syncSheetsBtn').addEventListener('click', syncToGoogleSheets);
         
