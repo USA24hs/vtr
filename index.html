@@ -6,16 +6,15 @@
     <title>Sistema de Deslocamento - Ambulância HCI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #0e5a77; --primary-dark: #0a3d4f; --bg-body: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success: #15803d; --danger: #ef4444; }
         body { background: var(--bg-body); font-family: 'Inter', sans-serif; padding: 1rem; padding-bottom: 80px; }
         .report-container { max-width: 1400px; margin: 0 auto; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
-        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 1.5rem 2rem; color: #fff; position: relative; transition: padding 0.3s ease; }
+        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 1.5rem 2rem; color: #fff; transition: padding 0.3s ease; }
         .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.15); }
         .header-top h1 { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        .toggle-header-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1rem; transition: 0.3s; }
+        .toggle-header-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: 0.3s; }
         .header-collapsed .toggle-header-btn i { transform: rotate(180deg); }
         .header-collapsed .info-grid { display: none; }
         .header-collapsed .header-top { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
@@ -55,21 +54,11 @@
         .sign-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
         .btn-clear { background: none; border: none; color: #64748b; font-size: 0.7rem; cursor: pointer; }
         .legible-name input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-top: 12px; }
-        .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 10px; justify-content: center; width: 100%; transition: 0.2s; font-family: 'Inter'; }
-        .preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: none; flex-direction: column; padding: 1rem; }
-        .preview-overlay.open { display: flex; }
-        .preview-container { background: #fff; border-radius: 20px; flex: 1; display: flex; flex-direction: column; max-width: 1200px; width: 100%; margin: 0 auto; overflow: hidden; }
-        .preview-toolbar { display: flex; justify-content: space-between; padding: 12px 20px; background: #1e293b; color: #fff; align-items: center; }
-        .preview-actions { display: flex; gap: 8px; }
-        .btn-p { border: none; padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; color: #fff; font-family: 'Inter'; }
-        .btn-p.dl { background: #0e5a77; } .btn-p.pr { background: #334155; } .btn-p.cl { background: #991b1b; }
-        .preview-content { flex: 1; background: #525659; overflow: auto; }
-        .preview-content iframe { width: 100%; height: 100%; border: none; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 10px 20px; border-radius: 40px; font-size: 0.85rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-family: 'Inter'; transition: 0.2s; margin-right: 12px; }
+        .btn-sync { background: linear-gradient(135deg, #0f9d58, #0b8043); color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-family: 'Inter'; transition: 0.2s; }
+        .footer { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 0.5rem; }
         .mobile-action-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px 1rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 9999; gap: 10px; justify-content: space-between; }
         .mobile-action-bar .btn-add { flex: 1; justify-content: center; padding: 14px; font-size: 0.9rem; border-radius: 14px; }
-
         @media (max-width: 768px) {
             body { padding: 0; padding-bottom: 80px; background: #fff; }
             .report-container { border-radius: 0; border: none; box-shadow: none; }
@@ -86,8 +75,11 @@
             .local-input { text-align: right !important; }
             .btn-delete { position: absolute; top: 10px; right: 10px; background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; }
             td:nth-child(9)::before { display: none; } td:nth-child(9) { justify-content: flex-end; border-bottom: none; padding-top: 0; }
-            .km-rodado { font-size: 1rem; padding: 6px 12px; } .btn-pdf { margin-top: 1rem; }
+            .km-rodado { font-size: 1rem; padding: 6px 12px; } .btn-pdf, .btn-sync { width: 100%; margin-bottom: 8px; margin-right: 0; }
+            .footer { flex-direction: column; }
         }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 10px 20px; border-radius: 40px; font-size: 0.85rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
@@ -130,8 +122,11 @@
             <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="3" placeholder="Intercorrências, condições da via..."></textarea></div>
             <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura</div><canvas id="signCanvas" width="400" height="110" style="width:100%;height:110px;"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
         </div>
-        <div class="footer"><button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)</button></div>
-        <div class="small-note" style="font-size:0.7rem; text-align:center; margin-top:1rem; padding-bottom:1rem;"><i class="fas fa-save"></i> Dados salvos localmente. Em breve sincronização com Google Sheets.</div>
+        <div class="footer">
+            <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)</button>
+            <button class="btn-sync" id="syncSheetsBtn"><i class="fas fa-cloud-upload-alt"></i> Sincronizar com Google Sheets</button>
+        </div>
+        <div class="small-note" style="font-size:0.7rem; text-align:center; margin-top:1rem; padding-bottom:1rem;"><i class="fas fa-save"></i> Dados salvos localmente. Para sincronizar, configure a URL do Google Apps Script no código (variável SHEETS_WEBAPP_URL).</div>
     </div>
 </div>
 
@@ -140,31 +135,23 @@
     <button class="btn-add btn-add-retorno" id="addRetornoBtnMobile"><i class="fas fa-undo-alt"></i> Retorno</button>
 </div>
 
-<div class="preview-overlay" id="previewOverlay">
-    <div class="preview-container">
-        <div class="preview-toolbar">
-            <h3><i class="fas fa-table"></i> Pré-visualização (Planilha)</h3>
-            <div class="preview-actions">
-                <button class="btn-p dl" id="btnDownloadPdf"><i class="fas fa-download"></i> Baixar</button>
-                <button class="btn-p pr" id="btnPrintPdf"><i class="fas fa-print"></i> Imprimir</button>
-                <button class="btn-p cl" id="btnClosePreview"><i class="fas fa-times"></i> Fechar</button>
-            </div>
-        </div>
-        <div class="preview-content" id="previewContent"></div>
-    </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
     (function() {
+        // ======================= CONFIGURAÇÃO DO GOOGLE SHEETS =======================
+        // 🔧 SUBSTITUA PELA URL DO SEU WEB APP (criado no Google Apps Script)
+        const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzOTc6o2nRKMlIxacAD3W1aqChZl2T8XirU8lZujfglrH81Qu6DCiUjz9U8exrLfFzKVA/exec"; // <--- ALTERE AQUI
+        
+        // ======================= FUNÇÕES AUXILIARES =======================
         const hoje = () => new Date().toISOString().slice(0,10);
         const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
         const formatDateBR = (s) => s ? s.split('-').reverse().join('/') : '';
         const nomeMes = (m) => ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1];
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
         const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); };
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
+        // Elementos DOM
         const tbody = document.getElementById('tableBody');
         const totalSpan = document.getElementById('totalKmValue');
         const observacaoEl = document.getElementById('observacao');
@@ -178,8 +165,7 @@
         const mesSelect = document.getElementById('mesSelect');
         const anoSelect = document.getElementById('anoSelect');
         
-        document.getElementById('toggleHeaderBtn').addEventListener('click', () => { document.getElementById('mainHeader').classList.toggle('header-collapsed'); });
-        
+        // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
         const hojeData = new Date(); mesSelect.value = hojeData.getMonth() + 1; anoSelect.value = hojeData.getFullYear();
         
@@ -188,6 +174,7 @@
         mesSelect.addEventListener('change', () => { atualizarLimitesDatas(); saveToLocal(); });
         anoSelect.addEventListener('change', () => { atualizarLimitesDatas(); saveToLocal(); });
         
+        // Assinatura digital (canvas)
         const canvas = document.getElementById('signCanvas'); const ctx = canvas.getContext('2d'); let desenhando = false;
         function redimencionarCanvas() { const w = canvas.clientWidth; const h = 110; canvas.width = w; canvas.height = h; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.lineCap = 'round'; }
         window.addEventListener('resize', () => redimencionarCanvas());
@@ -199,6 +186,7 @@
         document.getElementById('clearCanvasBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveToLocal(); });
         redimencionarCanvas();
         
+        // Cálculo de Km e total
         function calcularKmRodado(row) {
             const kmSaida = row.querySelector('.km-saida'); const kmChegada = row.querySelector('.km-chegada'); const spanRodado = row.querySelector('.km-rodado-val');
             if(!kmSaida || !kmChegada || !spanRodado) return;
@@ -213,6 +201,7 @@
         function inverterLocal(localStr) { if(!localStr) return ''; if(localStr.includes('→')) { let partes = localStr.split('→'); if(partes.length >= 2) return partes[1].trim() + ' → ' + partes[0].trim(); } return localStr; }
         function getLocalPadrao(tipo) { let unidade = unidadeEl.value.trim() || 'HCI'; if(tipo === 'saida') return `🏥 ${unidade} → 🏥 Destino`; return `🏥 Origem → 🏥 ${unidade}`; }
         
+        // Criar linha da tabela
         function criarLinha(data = '', tipo = 'saida', local = '', horaSaida = '', kmSaida = '', horaChegada = '', kmChegada = '') {
             const periodo = getPeriodo(); if(!data) data = hoje(); const tr = document.createElement('tr');
             const mkTd = (label, content) => { const td = document.createElement('td'); td.setAttribute('data-label', label); td.appendChild(content); return td; };
@@ -250,14 +239,15 @@
             tbody.appendChild(criarLinha(hoje(), tipo, local, hS, kmS, '', kmC)); updateTotalKm(); saveToLocal(); showToast(tipo === 'saida' ? 'Saída adicionada' : 'Retorno adicionado');
         }
         
+        // Salvar no localStorage
         function saveToLocal() {
             let registros = []; document.querySelectorAll('#tableBody tr').forEach(tr => { registros.push({ data: tr.querySelector('input[type="date"]')?.value || '', tipo: tr.querySelector('.tipo-select')?.value || '', horaSaida: tr.querySelector('.hora-saida')?.value || '', kmSaida: tr.querySelector('.km-saida')?.value || '', local: tr.querySelector('.local-input')?.value || '', horaChegada: tr.querySelector('.hora-chegada')?.value || '', kmChegada: tr.querySelector('.km-chegada')?.value || '' }); });
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v2', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
+            localStorage.setItem('sistemaDeslocamentoHCI_v3', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
         }
         
         function loadFromLocal() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v2'); if(!raw) return false;
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v3'); if(!raw) return false;
             try {
                 let d = JSON.parse(raw); condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
@@ -270,194 +260,181 @@
         
         function carregarExemplos() { tbody.innerHTML = ''; let hojeStr = hoje(); tbody.appendChild(criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478')); tbody.appendChild(criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502')); updateTotalKm(); }
         
-        let currentPdfUrl = null; const previewOverlay = document.getElementById('previewOverlay'); const previewContent = document.getElementById('previewContent');
-        function fecharPreview() { previewOverlay.classList.remove('open'); previewContent.innerHTML = ''; if(currentPdfUrl) { URL.revokeObjectURL(currentPdfUrl); currentPdfUrl = null; } }
-        
-async function gerarPDF() {
-    const btn = document.getElementById('pdfBtn');
-    btn.classList.add('loading');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PDF...';
-
-    try {
-        // Coleta dos dados atuais
-        let linhas = [];
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            linhas.push({
-                data: tr.querySelector('input[type="date"]')?.value || '',
-                tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? 'SAÍDA' : 'RETORNO',
-                hS: tr.querySelector('.hora-saida')?.value || '',
-                kmS: tr.querySelector('.km-saida')?.value || '0',
-                local: tr.querySelector('.local-input')?.value || '',
-                hC: tr.querySelector('.hora-chegada')?.value || '',
-                kmC: tr.querySelector('.km-chegada')?.value || '0',
-                kmR: tr.querySelector('.km-rodado-val')?.innerText || '0',
-                erro: tr.querySelector('.km-rodado-val')?.classList.contains('km-erro') || false
-            });
-        });
-
-        const totalKm = totalSpan.innerText;
-        const dataHora = new Date().toLocaleString('pt-BR');
-        const assinaturaImg = canvas.toDataURL('image/png');
-        const mesNome = nomeMes(parseInt(mesSelect.value));
-        const ano = anoSelect.value;
-
-        // Geração do HTML do relatório (estilo Google Sheets)
-        let linhasHTML = '';
-        linhas.forEach((l, idx) => {
-            const bg = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
-            const tipoIcon = l.tipo === 'SAÍDA' ? '🚑' : '🏥';
-            const kmRodStyle = l.erro ? 'color:#cc0000; font-weight:bold;' : 'color:#0b8043; font-weight:bold;';
-            linhasHTML += `
-                <tr style="background:${bg}">
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${idx+1}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${formatDateBR(l.data)}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${tipoIcon} ${l.tipo}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${l.hS}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:right; font-size:8pt;">${l.kmS}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:left; font-size:8pt;">${l.local}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:center; font-size:8pt;">${l.hC}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:right; font-size:8pt;">${l.kmC}</td>
-                    <td style="padding:5px 6px; border:1px solid #e0e0e0; text-align:right; font-size:8pt; ${kmRodStyle}">${l.kmR}</td>
-                </tr>
-            `;
-        });
-
-        const obsHTML = observacaoEl.value
-            ? `<tr><td colspan="9" style="border:1px solid #e0e0e0; padding:6px; font-size:8pt; background:#f8f9fa"><strong>📋 OBSERVAÇÕES:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}</td></tr>`
-            : '';
-
-        const pdfHtml = `
-            <div style="font-family: 'Inter', Arial, sans-serif; padding: 12px; color: #202124;">
-                <div style="margin-bottom: 16px;">
-                    <div style="font-size: 16pt; font-weight: 800; color: #0e5a77; margin-bottom: 4px;">Relatório de Deslocamento</div>
-                    <div style="font-size: 9pt; color: #5f6368;">Hospital HCI · Controle de Frota · ${mesNome} / ${ano}</div>
-                </div>
-
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9pt;">
-                    <tr>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Condutor</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; width:35%;">${condutorEl.value}</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Plantão</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; width:35%;">${plantaoEl.value}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Ambulância</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${ambulanciaEl.value}</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Placa</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${placaEl.value}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Km Inicial</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${kmInicialEl.value || '-'}</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0; background:#f1f3f4; font-weight:600;">Gerado em</td>
-                        <td style="padding: 5px 8px; border:1px solid #dadce0;">${dataHora}</td>
-                    </tr>
-                </table>
-
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background-color: #f1f3f4; border-top: 2px solid #0e5a77; border-bottom: 2px solid #0e5a77;">
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">#</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">Data</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">Tipo</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">H Saída</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:right;">Km Saída</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:left;">Local / Destino</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:center;">H Cheg.</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:right;">Km Cheg.</th>
-                            <th style="padding: 6px; border:1px solid #dadce0; font-size:7.5pt; text-align:right;">Km Rod.</th>
+        // ======================= RELATÓRIO (SEM PÁGINA BRANCA) =======================
+        async function gerarRelatorio() {
+            const btn = document.getElementById('pdfBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando relatório...';
+            try {
+                // Coletar dados atuais
+                const linhas = [];
+                document.querySelectorAll('#tableBody tr').forEach(tr => {
+                    linhas.push({
+                        data: tr.querySelector('input[type="date"]')?.value || '',
+                        tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? 'SAÍDA' : 'RETORNO',
+                        hS: tr.querySelector('.hora-saida')?.value || '',
+                        kmS: tr.querySelector('.km-saida')?.value || '0',
+                        local: tr.querySelector('.local-input')?.value || '',
+                        hC: tr.querySelector('.hora-chegada')?.value || '',
+                        kmC: tr.querySelector('.km-chegada')?.value || '0',
+                        kmR: tr.querySelector('.km-rodado-val')?.innerText || '0',
+                        erro: tr.querySelector('.km-rodado-val')?.classList.contains('km-erro')
+                    });
+                });
+                const totalKm = totalSpan.innerText;
+                const dataHora = new Date().toLocaleString('pt-BR');
+                const assinaturaImg = canvas.toDataURL('image/png');
+                const mesNome = nomeMes(parseInt(mesSelect.value));
+                const ano = anoSelect.value;
+                
+                let linhasHTML = '';
+                linhas.forEach((l, idx) => {
+                    const bg = idx % 2 === 0 ? '#fff' : '#f8f9fa';
+                    const kmRodStyle = l.erro ? 'color:#cc0000; font-weight:bold;' : 'color:#0b8043; font-weight:bold;';
+                    linhasHTML += `
+                        <tr style="background:${bg}">
+                            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${idx+1}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${formatDateBR(l.data)}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.tipo === 'SAÍDA' ? '🚑 SAÍDA' : '🏥 RETORNO'}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.hS}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:right;">${l.kmS}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:left;">${l.local}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${l.hC}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:right;">${l.kmC}</td>
+                            <td style="padding:6px; border:1px solid #ddd; text-align:right; ${kmRodStyle}">${l.kmR}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${linhasHTML}
-                        <tr style="background-color: #f1f3f4; border-top: 2px solid #0e5a77;">
-                            <td colspan="8" style="padding:6px; border:1px solid #dadce0; text-align:right; font-size:9pt; font-weight:700;">TOTAL GERAL</td>
-                            <td style="padding:6px; border:1px solid #dadce0; text-align:right; font-size:10pt; font-weight:800; color:#0b8043;">${totalKm}</td>
-                        </tr>
-                        ${obsHTML}
-                    </tbody>
-                </table>
-
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 9pt;">
+                    `;
+                });
+                const obsHTML = observacaoEl.value ? `
                     <tr>
-                        <td style="padding: 6px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Assinatura</td>
-                        <td style="padding: 6px; border:1px solid #dadce0; width:35%;"><img src="${assinaturaImg}" style="max-height: 50px;"></td>
-                        <td style="padding: 6px; border:1px solid #dadce0; background:#f1f3f4; width:15%; font-weight:600;">Nome Legível</td>
-                        <td style="padding: 6px; border:1px solid #dadce0; width:35%; font-weight:bold;">${nomeLegivelEl.value}</td>
+                        <td colspan="9" style="padding:8px; border:1px solid #ddd; background:#f9f9f9;">
+                            <strong>📋 Observações:</strong> ${observacaoEl.value.replace(/\n/g, '<br>')}
+                        </td>
                     </tr>
-                </table>
-                <div style="font-size: 7pt; color: #80868b; text-align: center; margin-top: 20px;">
-                    Documento gerado pelo Sistema de Deslocamento HCI
-                </div>
-            </div>
-        `;
-
-        // Cria contêiner temporário fora da tela para renderização
-        const printContainer = document.createElement('div');
-        printContainer.innerHTML = pdfHtml;
-        printContainer.style.position = 'absolute';
-        printContainer.style.top = '-9999px';
-        printContainer.style.left = '-9999px';
-        printContainer.style.width = '1120px';
-        printContainer.style.background = 'white';
-        printContainer.style.zIndex = '-1000';
-        document.body.appendChild(printContainer);
-
-        // Aguarda o carregamento de todas as imagens (assinatura)
-        const images = printContainer.querySelectorAll('img');
-        await Promise.all(Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-        }));
-
-        // Pequeno delay para garantir o layout
-        await new Promise(resolve => setTimeout(resolve, 150));
-
-        const opt = {
-            margin: [0.3, 0.3, 0.3, 0.3],
-            filename: `Deslocamento_${condutorEl.value.replace(/\s/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-        };
-
-        const pdfObj = await html2pdf().set(opt).from(printContainer).toPdf().get('pdf');
-        const pdfBlob = pdfObj.output('blob');
-
-        // Remove o contêiner temporário
-        document.body.removeChild(printContainer);
-
-        // Revoga URL antiga se existir
-        if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
-        currentPdfUrl = URL.createObjectURL(pdfBlob);
-
-        // 🔥 SEMPRE exibe a pré-visualização (em qualquer dispositivo)
-        previewContent.innerHTML = `<iframe src="${currentPdfUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
-        previewOverlay.classList.add('open');
-        showToast('✅ PDF gerado com sucesso!');
-
-    } catch (err) {
-        console.error('Erro no PDF:', err);
-        showToast('❌ Falha ao gerar o PDF. Tente novamente.');
-    } finally {
-        btn.classList.remove('loading');
-        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)';
-    }
-}
+                ` : '';
+                
+                const relatorioHTML = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="UTF-8"><title>Relatório Deslocamento HCI</title>
+                    <style>
+                        * { margin:0; padding:0; box-sizing:border-box; }
+                        body { font-family: 'Inter', Arial, sans-serif; background:#fff; padding:20px; color:#202124; }
+                        .container { max-width:1280px; margin:0 auto; }
+                        h1 { font-size:18pt; color:#0e5a77; margin-bottom:5px; }
+                        .sub { font-size:10pt; color:#5f6368; margin-bottom:20px; border-bottom:1px solid #dadce0; padding-bottom:10px; }
+                        .info-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:9pt; }
+                        .info-table td { padding:6px 10px; border:1px solid #dadce0; }
+                        .info-table td:first-child { background:#f1f3f4; font-weight:600; width:15%; }
+                        .data-table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:8.5pt; }
+                        .data-table th { background:#f1f3f4; padding:8px 6px; border:1px solid #dadce0; text-align:center; font-weight:700; }
+                        .footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dadce0; padding-top:20px; }
+                        .signature { display:flex; gap:30px; align-items:center; }
+                        .signature img { max-height:60px; border:1px solid #ccc; background:#fff; }
+                        @media print { body { padding:0; margin:0; } .no-print { display:none; } }
+                    </style>
+                    </head>
+                    <body>
+                    <div class="container">
+                        <h1>📄 Relatório de Deslocamento</h1>
+                        <div class="sub">Hospital HCI · Controle de Frota · ${mesNome} / ${ano}</div>
+                        <table class="info-table">
+                            <tr><td>Condutor</td><td>${condutorEl.value}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
+                            <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
+                            <tr><td>Km Inicial</td><td>${kmInicialEl.value || '-'}</td><td>Gerado em</td><td>${dataHora}</td></tr>
+                        </table>
+                        <table class="data-table">
+                            <thead><tr><th>#</th><th>Data</th><th>Tipo</th><th>H Saída</th><th>Km Saída</th><th>Local / Destino</th><th>H Chegada</th><th>Km Chegada</th><th>Km Rod.</th></tr></thead>
+                            <tbody>${linhasHTML}<tr style="background:#f1f3f4; font-weight:bold;"><td colspan="8" style="text-align:right;">TOTAL GERAL</td><td style="text-align:right;">${totalKm}</td></tr>${obsHTML}</tbody>
+                        </table>
+                        <div class="footer">
+                            <div class="signature"><div>Assinatura:</div><img src="${assinaturaImg}" alt="Assinatura"></div>
+                            <div><strong>Nome legível:</strong> ${nomeLegivelEl.value}</div>
+                        </div>
+                        <div style="font-size:7pt; text-align:center; margin-top:25px; color:#888;">Documento gerado pelo Sistema de Deslocamento HCI</div>
+                    </div>
+                    <div class="no-print" style="text-align:center; margin-top:20px;">
+                        <button onclick="window.print()" style="padding:10px 20px; font-size:14px;">🖨️ Imprimir / Salvar PDF</button>
+                        <button onclick="window.close()" style="padding:10px 20px; font-size:14px;">❌ Fechar</button>
+                    </div>
+                    </body>
+                    </html>
+                `;
+                const win = window.open('', '_blank');
+                win.document.write(relatorioHTML);
+                win.document.close();
+                win.focus();
+                showToast('✅ Relatório gerado! Use a nova janela para imprimir ou salvar PDF.');
+            } catch(err) {
+                console.error(err);
+                showToast('❌ Erro ao gerar relatório.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)';
+            }
+        }
         
+        // ======================= SINCRONIZAÇÃO COM GOOGLE SHEETS =======================
+        async function syncToGoogleSheets() {
+            if (SHEETS_WEBAPP_URL === "https://script.google.com/macros/s/SEU_ID_AQUI/exec") {
+                showToast("⚠️ Configure a URL do Google Apps Script no código (variável SHEETS_WEBAPP_URL)");
+                return;
+            }
+            const btn = document.getElementById('syncSheetsBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            try {
+                const registros = [];
+                document.querySelectorAll('#tableBody tr').forEach(tr => {
+                    registros.push({
+                        data: tr.querySelector('input[type="date"]')?.value || '',
+                        tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? 'SAÍDA' : 'RETORNO',
+                        horaSaida: tr.querySelector('.hora-saida')?.value || '',
+                        kmSaida: tr.querySelector('.km-saida')?.value || '0',
+                        local: tr.querySelector('.local-input')?.value || '',
+                        horaChegada: tr.querySelector('.hora-chegada')?.value || '',
+                        kmChegada: tr.querySelector('.km-chegada')?.value || '0',
+                        kmRodado: tr.querySelector('.km-rodado-val')?.innerText || '0'
+                    });
+                });
+                const payload = {
+                    aba: `Relatorio_${mesSelect.value}_${anoSelect.value}`,
+                    registros: registros,
+                    condutor: condutorEl.value,
+                    ambulancia: ambulanciaEl.value,
+                    placa: placaEl.value,
+                    plantao: plantaoEl.value,
+                    observacoes: observacaoEl.value,
+                    totalKm: totalSpan.innerText
+                };
+                await fetch(SHEETS_WEBAPP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                showToast('✅ Dados enviados para o Google Sheets!');
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Erro ao enviar para o Google Sheets. Verifique a URL e permissões.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar com Google Sheets';
+            }
+        }
+        
+        // ======================= EVENTOS E INICIALIZAÇÃO =======================
+        document.getElementById('toggleHeaderBtn').addEventListener('click', () => { document.getElementById('mainHeader').classList.toggle('header-collapsed'); });
         document.getElementById('addSaidaBtn').addEventListener('click', () => adicionarLinha('saida'));
         document.getElementById('addRetornoBtn').addEventListener('click', () => adicionarLinha('retorno'));
         document.getElementById('addSaidaBtnMobile').addEventListener('click', () => adicionarLinha('saida'));
         document.getElementById('addRetornoBtnMobile').addEventListener('click', () => adicionarLinha('retorno'));
-        document.getElementById('pdfBtn').addEventListener('click', gerarPDF);
+        document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
+        document.getElementById('syncSheetsBtn').addEventListener('click', syncToGoogleSheets);
         
         [condutorEl, unidadeEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { el.addEventListener('input', () => saveToLocal()); });
-        [plantaoEl, mesSelect].forEach(el => { el.addEventListener('change', () => saveToLocal()); });
+        [plantaoEl, mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => saveToLocal()); });
         window.addEventListener('beforeunload', () => saveToLocal());
-        
-        document.getElementById('btnDownloadPdf').onclick = () => { const a = document.createElement('a'); a.href = currentPdfUrl; a.download = `deslocamento.pdf`; a.click(); showToast('Download iniciado'); };
-        document.getElementById('btnPrintPdf').onclick = () => { window.open(currentPdfUrl, '_blank'); };
-        document.getElementById('btnClosePreview').onclick = fecharPreview;
         
         if(!loadFromLocal()) { carregarExemplos(); saveToLocal(); }
         atualizarLimitesDatas();
