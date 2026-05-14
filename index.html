@@ -58,6 +58,35 @@
         .btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-family: 'Inter'; transition: 0.2s; margin-right: 12px; }
         .btn-sync { background: linear-gradient(135deg, #0f9d58, #0b8043); color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-family: 'Inter'; transition: 0.2s; }
         .footer { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 0.5rem; }
+
+        /* ===== CONFIGURAÇÃO GOOGLE SHEETS ===== */
+        .config-card { background: #f8fafc; }
+        .config-toggle { cursor: pointer; user-select: none; }
+        .config-toggle:hover { opacity: 0.85; }
+        .config-status { margin-left: auto; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; font-weight: 600; color: #64748b; }
+        .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #94a3b8; display: inline-block; transition: 0.3s; flex-shrink: 0; }
+        .status-dot.online { background: #15803d; box-shadow: 0 0 8px rgba(21,128,61,0.5); }
+        .status-dot.offline { background: #dc2626; box-shadow: 0 0 8px rgba(220,38,38,0.4); }
+        .status-dot.testing { background: #f59e0b; animation: pulse-dot 1s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .config-content { overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; }
+        .config-content.closed { max-height: 0; opacity: 0; pointer-events: none; }
+        .config-content.open { max-height: 500px; opacity: 1; }
+        .config-url-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .config-url-input { flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); font-family: 'Inter'; font-size: 0.85rem; background: #fff; transition: border-color 0.3s; }
+        .config-url-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,90,119,0.1); }
+        .btn-test-conn { background: var(--primary); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-family: 'Inter'; white-space: nowrap; transition: 0.2s; font-size: 0.85rem; }
+        .btn-test-conn:hover { background: var(--primary-dark); }
+        .btn-test-conn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .config-hint { font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px; line-height: 1.5; }
+        .config-hint a { color: var(--primary); font-weight: 600; }
+        .config-sync-info { font-size: 0.8rem; color: #15803d; padding: 10px 14px; background: #f0fdf4; border-radius: 10px; margin-top: 10px; display: flex; align-items: center; gap: 8px; border: 1px solid #bbf7d0; }
+        .config-sync-info.erro { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+        .config-step { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 10px; font-size: 0.78rem; line-height: 1.7; color: #475569; }
+        .config-step strong { color: var(--primary-dark); }
+        .config-step ol { padding-left: 20px; margin-top: 6px; }
+        .config-step li { margin-bottom: 4px; }
+
         .mobile-action-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px 1rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 9999; gap: 10px; justify-content: space-between; }
         .mobile-action-bar .btn-add { flex: 1; justify-content: center; padding: 14px; font-size: 0.9rem; border-radius: 14px; }
         @media (max-width: 768px) {
@@ -78,8 +107,10 @@
             td:nth-child(9)::before { display: none; } td:nth-child(9) { justify-content: flex-end; border-bottom: none; padding-top: 0; }
             .km-rodado { font-size: 1rem; padding: 6px 12px; } .btn-pdf, .btn-sync { width: 100%; margin-bottom: 8px; margin-right: 0; }
             .footer { flex-direction: column; }
+            .config-url-row { flex-direction: column; }
+            .btn-test-conn { width: 100%; justify-content: center; }
         }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 10px 20px; border-radius: 40px; font-size: 0.85rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 12px 24px; border-radius: 40px; font-size: 0.85rem; transition: 0.3s; z-index: 11000; opacity: 0; pointer-events: none; max-width: 90vw; text-align: center; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
@@ -124,11 +155,46 @@
             <div class="obs-box card"><div class="card-title"><i class="fas fa-clipboard-list"></i> Observações</div><textarea id="observacao" rows="3" placeholder="Intercorrências, condições da via..."></textarea></div>
             <div class="sign-box"><div class="card-title"><i class="fas fa-signature"></i> Assinatura</div><canvas id="signCanvas" width="400" height="110" style="width:100%;height:110px;"></canvas><div class="sign-actions"><button class="btn-clear" id="clearCanvasBtn"><i class="fas fa-eraser"></i> Limpar</button></div><div class="legible-name"><input type="text" id="nomeLegivel" placeholder="Nome completo" value="Anderson Martins"></div></div>
         </div>
+
+        <!-- ===== CONFIGURAÇÃO GOOGLE SHEETS ===== -->
+        <div class="card config-card">
+            <div class="card-title config-toggle" id="configToggle">
+                <i class="fas fa-cog"></i> Configuração Google Sheets
+                <span class="config-status" id="configStatus">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Não configurado</span>
+                </span>
+            </div>
+            <div class="config-content closed" id="configContent">
+                <div class="config-url-row">
+                    <input type="url" id="sheetsUrlInput" class="config-url-input" placeholder="https://script.google.com/macros/s/AKfycbyuGhWuJLuWYdZDTjpVfRyRNz1I2ZmCd8LloGcWURxfjV3N9LnD9XSupUSwWXLC5zjeOA/exec">
+                    <button class="btn-test-conn" id="testConnBtn"><i class="fas fa-plug"></i> Testar Conexão</button>
+                </div>
+                <p class="config-hint"><i class="fas fa-info-circle"></i> Cole a URL de implantação do Apps Script acima. A aba mensal será criada automaticamente na planilha.</p>
+                <div class="config-sync-info" id="syncInfoBox" style="display:none;">
+                    <i class="fas fa-check-circle"></i> Última sincronização: <strong id="lastSyncTimeText">-</strong>
+                </div>
+                <div class="config-step">
+                    <strong>Como configurar (primeira vez):</strong>
+                    <ol>
+                        <li>Crie uma <strong>nova planilha</strong> no Google Sheets</li>
+                        <li>Vá em <strong>Extensões → Apps Script</strong></li>
+                        <li>Apague o código existente e cole o script fornecido</li>
+                        <li>Clique em <strong>Implantar → Nova implantação</strong></li>
+                        <li>Tipo: <strong>App da Web</strong> | Executar como: <strong>Eu</strong> | Acesso: <strong>Qualquer pessoa</strong></li>
+                        <li>autorize o script quando solicitado</li>
+                        <li>Copie a <strong>URL gerada</strong> e cole no campo acima</li>
+                        <li>Clique em <strong>Testar Conexão</strong> para verificar</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">
             <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)</button>
             <button class="btn-sync" id="syncSheetsBtn"><i class="fas fa-cloud-upload-alt"></i> Sincronizar com Google Sheets</button>
         </div>
-        <div class="small-note" style="font-size:0.7rem; text-align:center; margin-top:1rem; padding-bottom:1rem;"><i class="fas fa-save"></i> Dados salvos localmente. Para sincronizar, configure a URL do Google Apps Script no código (variável SHEETS_WEBAPP_URL).</div>
+        <div class="small-note" style="font-size:0.7rem; text-align:center; margin-top:1rem; padding-bottom:1rem;"><i class="fas fa-save"></i> Dados salvos localmente. Configure a URL do Apps Script na seção acima para sincronizar com o Google Sheets.</div>
     </div>
 </div>
 
@@ -142,17 +208,14 @@
 
 <script>
     (function() {
-        // ======================= CONFIGURAÇÃO DO GOOGLE SHEETS =======================
-        const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/SEU_ID_AQUI/exec"; // <--- ALTERE AQUI
-        
         // ======================= FUNÇÕES AUXILIARES =======================
         const hoje = () => new Date().toISOString().slice(0,10);
         const getHoraAtual = () => { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; };
         const formatDateBR = (s) => s ? s.split('-').reverse().join('/') : '';
         const nomeMes = (m) => ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1];
         const diasNoMes = (m,a) => new Date(a, m, 0).getDate();
-        const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); };
-        
+        const showToast = (msg) => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
+
         // Elementos DOM
         const tbody = document.getElementById('tableBody');
         const totalSpan = document.getElementById('totalKmValue');
@@ -166,17 +229,113 @@
         const nomeLegivelEl = document.getElementById('nomeLegivel');
         const mesSelect = document.getElementById('mesSelect');
         const anoSelect = document.getElementById('anoSelect');
-        
+
+        // Elementos da configuração Google Sheets
+        const configToggle = document.getElementById('configToggle');
+        const configContent = document.getElementById('configContent');
+        const sheetsUrlInput = document.getElementById('sheetsUrlInput');
+        const testConnBtn = document.getElementById('testConnBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const syncInfoBox = document.getElementById('syncInfoBox');
+        const lastSyncTimeText = document.getElementById('lastSyncTimeText');
+
         // Inicialização do seletor de meses
         for(let m = 1; m <= 12; m++) { let opt = document.createElement('option'); opt.value = m; opt.textContent = nomeMes(m).substring(0,3); mesSelect.appendChild(opt); }
         const hojeData = new Date(); mesSelect.value = hojeData.getMonth() + 1; anoSelect.value = hojeData.getFullYear();
-        
+
         function getPeriodo() { let m = parseInt(mesSelect.value); let a = parseInt(anoSelect.value); return { mes: m, ano: a, min: `${a}-${String(m).padStart(2,'0')}-01`, max: `${a}-${String(m).padStart(2,'0')}-${diasNoMes(m,a)}` }; }
         function atualizarLimitesDatas() { const p = getPeriodo(); document.querySelectorAll('#tableBody input[type="date"]').forEach(inp => { inp.min = p.min; inp.max = p.max; }); }
         mesSelect.addEventListener('change', () => { atualizarLimitesDatas(); saveToLocal(); });
         anoSelect.addEventListener('change', () => { atualizarLimitesDatas(); saveToLocal(); });
-        
-        // Assinatura digital (canvas)
+
+        // ======================= CONFIGURAÇÃO GOOGLE SHEETS =======================
+        // Carrega URL salva
+        sheetsUrlInput.value = localStorage.getItem('sheetsWebAppUrl_hci') || '';
+
+        // Estado inicial do painel de configuração
+        function atualizarEstadoConfig() {
+            const url = sheetsUrlInput.value.trim();
+            const lastSync = localStorage.getItem('lastSyncTime_hci');
+
+            if (url) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'Configurado (não testado)';
+                configContent.className = 'config-content closed';
+            } else {
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'Não configurado';
+                configContent.className = 'config-content open';
+            }
+
+            if (lastSync) {
+                syncInfoBox.style.display = 'flex';
+                syncInfoBox.className = 'config-sync-info';
+                lastSyncTimeText.textContent = lastSync;
+            }
+        }
+        atualizarEstadoConfig();
+
+        // Toggle do painel de configuração
+        configToggle.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-test-conn')) return;
+            const isOpen = configContent.className.includes('open');
+            configContent.className = isOpen ? 'config-content closed' : 'config-content open';
+        });
+
+        // Salvar URL ao digitar
+        sheetsUrlInput.addEventListener('input', () => {
+            localStorage.setItem('sheetsWebAppUrl_hci', sheetsUrlInput.value.trim());
+            const url = sheetsUrlInput.value.trim();
+            if (url) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'Configurado (não testado)';
+            } else {
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'Não configurado';
+            }
+        });
+
+        // Testar conexão
+        testConnBtn.addEventListener('click', async () => {
+            const url = sheetsUrlInput.value.trim();
+            if (!url) {
+                showToast('⚠️ Cole a URL do Apps Script primeiro');
+                return;
+            }
+
+            testConnBtn.disabled = true;
+            testConnBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+            statusDot.className = 'status-dot testing';
+            statusText.textContent = 'Testando...';
+
+            try {
+                const testUrl = url + (url.includes('?') ? '&' : '?') + 'action=test';
+                const response = await fetch(testUrl);
+                const result = await response.json();
+
+                if (result.status === 'online') {
+                    statusDot.className = 'status-dot online';
+                    statusText.textContent = 'Conectado ✓';
+                    localStorage.setItem('sheetsWebAppUrl_hci', url);
+                    showToast('✅ Conexão OK! Planilha: ' + (result.planilha || 'conectada'));
+                } else {
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Resposta inesperada';
+                    showToast('⚠️ Conexão retornou status inesperado');
+                }
+            } catch(err) {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'Falha na conexão';
+                showToast('❌ Não foi possível conectar. Verifique a URL e as permissões do script.');
+                console.error('Erro teste conexão:', err);
+            } finally {
+                testConnBtn.disabled = false;
+                testConnBtn.innerHTML = '<i class="fas fa-plug"></i> Testar Conexão';
+            }
+        });
+
+        // ======================= ASSINATURA DIGITAL =======================
         const canvas = document.getElementById('signCanvas'); const ctx = canvas.getContext('2d'); let desenhando = false;
         function redimencionarCanvas() { const w = canvas.clientWidth; const h = 110; canvas.width = w; canvas.height = h; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.lineCap = 'round'; }
         window.addEventListener('resize', () => redimencionarCanvas());
@@ -187,26 +346,26 @@
         canvas.addEventListener('mousedown', iniciarDesenho); canvas.addEventListener('mousemove', desenhar); canvas.addEventListener('mouseup', pararDesenho); canvas.addEventListener('touchstart', iniciarDesenho, {passive: false}); canvas.addEventListener('touchmove', desenhar, {passive: false}); canvas.addEventListener('touchend', pararDesenho);
         document.getElementById('clearCanvasBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveToLocal(); });
         redimencionarCanvas();
-        
-        // Cálculo de Km e total
+
+        // ======================= CÁLCULO DE KM =======================
         function calcularKmRodado(row) {
             const kmSaida = row.querySelector('.km-saida'); const kmChegada = row.querySelector('.km-chegada'); const spanRodado = row.querySelector('.km-rodado-val');
             if(!kmSaida || !kmChegada || !spanRodado) return;
             let s = parseFloat(kmSaida.value) || 0; let c = parseFloat(kmChegada.value) || 0;
-            if(c < s) { spanRodado.innerText = 'Inválido'; spanRodado.className = 'km-rodado-val km-rodado km-erro'; } 
+            if(c < s) { spanRodado.innerText = 'Inválido'; spanRodado.className = 'km-rodado-val km-rodado km-erro'; }
             else { spanRodado.innerText = (c - s).toFixed(1); spanRodado.className = 'km-rodado-val km-rodado km-ok'; }
             updateTotalKm();
         }
         function updateTotalKm() { let total = 0; document.querySelectorAll('#tableBody tr .km-rodado-val.km-ok').forEach(el => { let v = parseFloat(el.innerText); if(!isNaN(v)) total += v; }); totalSpan.innerText = total.toFixed(1); }
         function getUltimoKmChegada() { const rows = Array.from(tbody.querySelectorAll('tr')); for(let i = rows.length-1; i >= 0; i--) { const kmC = rows[i].querySelector('.km-chegada'); if(kmC && kmC.value) return kmC.value; } return ''; }
         function getKmReferencia() { return getUltimoKmChegada() || kmInicialEl.value || ''; }
-        
+
         // ======================= FUNÇÕES PARA LOCAL =======================
         function limparNomeLocal(str) {
             if (!str) return '';
             return str.replace(/🏥/g, '').trim();
         }
-        
+
         function getUltimoDestinoLimpo() {
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return null;
@@ -216,7 +375,7 @@
             if (partes.length >= 2) return limparNomeLocal(partes[1]);
             return limparNomeLocal(ultimoLocal);
         }
-        
+
         function getLocalSaida() {
             const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
             const ultimoDestino = getUltimoDestinoLimpo();
@@ -226,7 +385,7 @@
                 return `🏥 ${ultimoDestino} →🏥  `;
             }
         }
-        
+
         function getLocalRetorno() {
             const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
             const rows = Array.from(tbody.querySelectorAll('tr'));
@@ -241,18 +400,16 @@
             const destino = limparNomeLocal(partes[1]);
             return `🏥 ${destino} → 🏥 ${origem}`;
         }
-        
-        // NOVA FUNÇÃO: Retorno à Base (último destino → unidade)
+
         function getLocalBase() {
             const unidade = limparNomeLocal(unidadeEl.value.trim()) || 'HCI';
             const ultimoDestino = getUltimoDestinoLimpo();
             if (!ultimoDestino) {
-                // Se não há registros, base partindo da própria unidade? Melhor deixar "🏥 ${unidade} → 🏥 ${unidade}" (deslocamento nulo)
                 return `🏥 ${unidade} → 🏥 ${unidade}`;
             }
             return `🏥 ${ultimoDestino} → 🏥 ${unidade}`;
         }
-        
+
         // ======================= CRIAÇÃO DE LINHA =======================
         function criarLinha(data = '', tipo = 'saida', local = '', horaSaida = '', kmSaida = '', horaChegada = '', kmChegada = '') {
             const periodo = getPeriodo(); if(!data) data = hoje(); const tr = document.createElement('tr');
@@ -282,9 +439,9 @@
             btnDel.addEventListener('click', () => { tr.remove(); updateTotalKm(); saveToLocal(); showToast('Registro removido'); });
             calcularKmRodado(tr); return tr;
         }
-        
+
         function adicionarLinha(tipo) {
-            let kmRef = getKmReferencia(); 
+            let kmRef = getKmReferencia();
             let local = '';
             let hS = getHoraAtual();
             let kmS = kmRef;
@@ -296,22 +453,22 @@
             } else if (tipo === 'base') {
                 local = getLocalBase();
             }
-            tbody.appendChild(criarLinha(hoje(), (tipo === 'base' ? 'retorno' : tipo), local, hS, kmS, '', kmC)); 
-            updateTotalKm(); 
-            saveToLocal(); 
+            tbody.appendChild(criarLinha(hoje(), (tipo === 'base' ? 'retorno' : tipo), local, hS, kmS, '', kmC));
+            updateTotalKm();
+            saveToLocal();
             let msg = tipo === 'saida' ? 'Saída adicionada' : (tipo === 'retorno' ? 'Retorno adicionado' : 'Retorno à Base adicionado');
             showToast(msg);
         }
-        
-        // Salvar no localStorage
+
+        // ======================= SALVAR NO LOCALSTORAGE =======================
         function saveToLocal() {
             let registros = []; document.querySelectorAll('#tableBody tr').forEach(tr => { registros.push({ data: tr.querySelector('input[type="date"]')?.value || '', tipo: tr.querySelector('.tipo-select')?.value || '', horaSaida: tr.querySelector('.hora-saida')?.value || '', kmSaida: tr.querySelector('.km-saida')?.value || '', local: tr.querySelector('.local-input')?.value || '', horaChegada: tr.querySelector('.hora-chegada')?.value || '', kmChegada: tr.querySelector('.km-chegada')?.value || '' }); });
             let assinatura = ''; try { assinatura = canvas.toDataURL(); } catch(e) {}
-            localStorage.setItem('sistemaDeslocamentoHCI_v5', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
+            localStorage.setItem('sistemaDeslocamentoHCI_v6', JSON.stringify({ rows: registros, observacao: observacaoEl.value, condutor: condutorEl.value, unidade: unidadeEl.value, ambulancia: ambulanciaEl.value, placa: placaEl.value, plantao: plantaoEl.value, kmInicial: kmInicialEl.value, nomeLegivel: nomeLegivelEl.value, mes: parseInt(mesSelect.value), ano: parseInt(anoSelect.value), assinaturaImg: assinatura }));
         }
-        
+
         function loadFromLocal() {
-            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v5'); if(!raw) return false;
+            let raw = localStorage.getItem('sistemaDeslocamentoHCI_v6'); if(!raw) return false;
             try {
                 let d = JSON.parse(raw); condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
@@ -321,16 +478,16 @@
                 updateTotalKm(); atualizarLimitesDatas(); return true;
             } catch(e) { return false; }
         }
-        
-        function carregarExemplos() { 
-            tbody.innerHTML = ''; 
-            let hojeStr = hoje(); 
-            tbody.appendChild(criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478')); 
-            tbody.appendChild(criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502')); 
-            updateTotalKm(); 
+
+        function carregarExemplos() {
+            tbody.innerHTML = '';
+            let hojeStr = hoje();
+            tbody.appendChild(criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478'));
+            tbody.appendChild(criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502'));
+            updateTotalKm();
         }
-        
-        // ======================= RELATÓRIO (SEM PÁGINA BRANCA) =======================
+
+        // ======================= RELATÓRIO PDF =======================
         async function gerarRelatorio() {
             const btn = document.getElementById('pdfBtn');
             btn.disabled = true;
@@ -353,9 +510,9 @@
                 const totalKm = totalSpan.innerText;
                 const dataHora = new Date().toLocaleString('pt-BR');
                 const assinaturaImg = canvas.toDataURL('image/png');
-                const mesNome = nomeMes(parseInt(mesSelect.value));
+                const mesNome2 = nomeMes(parseInt(mesSelect.value));
                 const ano = anoSelect.value;
-                
+
                 let linhasHTML = '';
                 linhas.forEach((l, idx) => {
                     const bg = idx % 2 === 0 ? '#fff' : '#f8f9fa';
@@ -381,7 +538,7 @@
                         </td>
                     </tr>
                 ` : '';
-                
+
                 const relatorioHTML = `
                     <!DOCTYPE html>
                     <html>
@@ -406,7 +563,7 @@
                     <body>
                     <div class="container">
                         <h1>📄 Relatório de Deslocamento</h1>
-                        <div class="sub">Hospital HCI · Controle de Frota · ${mesNome} / ${ano}</div>
+                        <div class="sub">Hospital HCI · Controle de Frota · ${mesNome2} / ${ano}</div>
                         <table class="info-table">
                             <tr><td>Condutor</td><td>${condutorEl.value}</td><td>Plantão</td><td>${plantaoEl.value}</td></tr>
                             <tr><td>Ambulância</td><td>${ambulanciaEl.value}</td><td>Placa</td><td>${placaEl.value}</td></tr>
@@ -442,22 +599,31 @@
                 btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar Relatório Planilha (PDF)';
             }
         }
-        
-        // ======================= SINCRONIZAÇÃO COM GOOGLE SHEETS =======================
+
+        // ======================= SINCRONIZAÇÃO COM GOOGLE SHEETS (NOVO) =======================
         async function syncToGoogleSheets() {
-            if (SHEETS_WEBAPP_URL === "https://script.google.com/macros/s/AKfycbzOTc6o2nRKMlIxacAD3W1aqChZl2T8XirU8lZujfglrH81Qu6DCiUjz9U8exrLfFzKVA/exec") {
-                showToast("⚠️ Configure a URL do Google Apps Script no código (variável SHEETS_WEBAPP_URL)");
+            const url = localStorage.getItem('sheetsWebAppUrl_hci') || '';
+            if (!url) {
+                showToast('⚠️ Configure a URL do Apps Script na seção de configuração');
+                // Abrir painel de configuração
+                configContent.className = 'config-content open';
+                sheetsUrlInput.focus();
                 return;
             }
+
             const btn = document.getElementById('syncSheetsBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            statusDot.className = 'status-dot testing';
+            statusText.textContent = 'Enviando...';
+
             try {
+                // Coletar registros da tabela
                 const registros = [];
                 document.querySelectorAll('#tableBody tr').forEach(tr => {
                     registros.push({
                         data: tr.querySelector('input[type="date"]')?.value || '',
-                        tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? 'SAÍDA' : 'RETORNO',
+                        tipo: tr.querySelector('.tipo-select')?.value === 'saida' ? '🚑 SAÍDA' : '🏥 RETORNO',
                         horaSaida: tr.querySelector('.hora-saida')?.value || '',
                         kmSaida: tr.querySelector('.km-saida')?.value || '0',
                         local: tr.querySelector('.local-input')?.value || '',
@@ -466,32 +632,89 @@
                         kmRodado: tr.querySelector('.km-rodado-val')?.innerText || '0'
                     });
                 });
+
+                // Montar payload completo
                 const payload = {
-                    aba: `Relatorio_${mesSelect.value}_${anoSelect.value}`,
+                    mesNome: nomeMes(parseInt(mesSelect.value)),
+                    ano: parseInt(anoSelect.value),
                     registros: registros,
                     condutor: condutorEl.value,
+                    unidade: unidadeEl.value,
                     ambulancia: ambulanciaEl.value,
                     placa: placaEl.value,
                     plantao: plantaoEl.value,
+                    kmInicial: kmInicialEl.value,
                     observacoes: observacaoEl.value,
                     totalKm: totalSpan.innerText
                 };
-                await fetch(SHEETS_WEBAPP_URL, {
+
+                // Enviar via POST com Content-Type text/plain (evita preflight CORS)
+                const response = await fetch(url, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'text/plain;charset=UTF-8'
+                    },
                     body: JSON.stringify(payload)
                 });
-                showToast('✅ Dados enviados para o Google Sheets!');
-            } catch (err) {
-                console.error(err);
-                showToast('❌ Erro ao enviar para o Google Sheets. Verifique a URL e permissões.');
+
+                // Tentar parsear resposta JSON
+                let result;
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    // Se não veio JSON, tentar ler como texto e parsear
+                    const text = await response.text();
+                    try {
+                        result = JSON.parse(text);
+                    } catch(parseErr) {
+                        throw new Error('Resposta do servidor não é JSON válido. Verifique se o script está implantado como "Qualquer pessoa".');
+                    }
+                }
+
+                if (result.status === 'success') {
+                    statusDot.className = 'status-dot online';
+                    statusText.textContent = 'Conectado ✓';
+                    const syncTime = new Date().toLocaleString('pt-BR');
+                    localStorage.setItem('lastSyncTime_hci', syncTime);
+                    syncInfoBox.style.display = 'flex';
+                    syncInfoBox.className = 'config-sync-info';
+                    lastSyncTimeText.textContent = syncTime;
+                    showToast('✅ ' + result.message);
+                } else {
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Erro no envio';
+                    syncInfoBox.style.display = 'flex';
+                    syncInfoBox.className = 'config-sync-info erro';
+                    syncInfoBox.querySelector('i').className = 'fas fa-exclamation-circle';
+                    lastSyncTimeText.textContent = result.message || 'Erro desconhecido';
+                    showToast('❌ Erro: ' + (result.message || 'Erro desconhecido'));
+                }
+
+            } catch(err) {
+                console.error('Erro sync:', err);
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'Falha na conexão';
+                syncInfoBox.style.display = 'flex';
+                syncInfoBox.className = 'config-sync-info erro';
+                syncInfoBox.querySelector('i').className = 'fas fa-exclamation-circle';
+
+                let msgErro = 'Erro de conexão.';
+                if (err.message.includes('JSON')) {
+                    msgErro = 'Resposta inválida. Verifique se o script está configurado como "Qualquer pessoa".';
+                } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                    msgErro = 'Não foi possível conectar. Verifique a URL e sua internet.';
+                } else if (err.message) {
+                    msgErro = err.message;
+                }
+                lastSyncTimeText.textContent = msgErro;
+                showToast('❌ ' + msgErro);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar com Google Sheets';
             }
         }
-        
+
         // ======================= EVENTOS E INICIALIZAÇÃO =======================
         document.getElementById('toggleHeaderBtn').addEventListener('click', () => { document.getElementById('mainHeader').classList.toggle('header-collapsed'); });
         document.getElementById('addSaidaBtn').addEventListener('click', () => adicionarLinha('saida'));
@@ -502,11 +725,11 @@
         document.getElementById('addBaseBtnMobile').addEventListener('click', () => adicionarLinha('base'));
         document.getElementById('pdfBtn').addEventListener('click', gerarRelatorio);
         document.getElementById('syncSheetsBtn').addEventListener('click', syncToGoogleSheets);
-        
+
         [condutorEl, unidadeEl, ambulanciaEl, placaEl, kmInicialEl, nomeLegivelEl, observacaoEl].forEach(el => { el.addEventListener('input', () => saveToLocal()); });
         [plantaoEl, mesSelect, anoSelect].forEach(el => { el.addEventListener('change', () => saveToLocal()); });
         window.addEventListener('beforeunload', () => saveToLocal());
-        
+
         if(!loadFromLocal()) { carregarExemplos(); saveToLocal(); }
         atualizarLimitesDatas();
     })();
