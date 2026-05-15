@@ -250,10 +250,8 @@
         anoSelect.addEventListener('change', () => { atualizarLimitesDatas(); saveToLocal(); });
 
         // ======================= CONFIGURAÇÃO GOOGLE SHEETS =======================
-        // Carrega URL salva
         sheetsUrlInput.value = localStorage.getItem('sheetsWebAppUrl_hci') || '';
 
-        // Estado inicial do painel de configuração
         function atualizarEstadoConfig() {
             const url = sheetsUrlInput.value.trim();
             const lastSync = localStorage.getItem('lastSyncTime_hci');
@@ -276,14 +274,12 @@
         }
         atualizarEstadoConfig();
 
-        // Toggle do painel de configuração
         configToggle.addEventListener('click', (e) => {
             if (e.target.closest('.btn-test-conn')) return;
             const isOpen = configContent.className.includes('open');
             configContent.className = isOpen ? 'config-content closed' : 'config-content open';
         });
 
-        // Salvar URL ao digitar
         sheetsUrlInput.addEventListener('input', () => {
             localStorage.setItem('sheetsWebAppUrl_hci', sheetsUrlInput.value.trim());
             const url = sheetsUrlInput.value.trim();
@@ -296,7 +292,6 @@
             }
         });
 
-        // Testar conexão
         testConnBtn.addEventListener('click', async () => {
             const url = sheetsUrlInput.value.trim();
             if (!url) {
@@ -440,6 +435,7 @@
             calcularKmRodado(tr); return tr;
         }
 
+        // ========== NOVA LINHA SEMPRE NO TOPO (mobile: último registro em primeiro) ==========
         function adicionarLinha(tipo) {
             let kmRef = getKmReferencia();
             let local = '';
@@ -453,7 +449,9 @@
             } else if (tipo === 'base') {
                 local = getLocalBase();
             }
-            tbody.appendChild(criarLinha(hoje(), (tipo === 'base' ? 'retorno' : tipo), local, hS, kmS, '', kmC));
+            const novaRow = criarLinha(hoje(), (tipo === 'base' ? 'retorno' : tipo), local, hS, kmS, '', kmC);
+            // Insere no topo (primeiro filho do tbody)
+            tbody.insertBefore(novaRow, tbody.firstChild);
             updateTotalKm();
             saveToLocal();
             let msg = tipo === 'saida' ? 'Saída adicionada' : (tipo === 'retorno' ? 'Retorno adicionado' : 'Retorno à Base adicionado');
@@ -473,7 +471,13 @@
                 let d = JSON.parse(raw); condutorEl.value = d.condutor || 'Anderson Martins'; unidadeEl.value = d.unidade || 'HCI'; ambulanciaEl.value = d.ambulancia || 'Ducato'; placaEl.value = d.placa || 'RKD-5A25'; plantaoEl.value = d.plantao || 'SD 12hs'; kmInicialEl.value = d.kmInicial || ''; nomeLegivelEl.value = d.nomeLegivel || 'Anderson Martins'; observacaoEl.value = d.observacao || '';
                 if(d.mes) mesSelect.value = d.mes; if(d.ano) anoSelect.value = d.ano;
                 tbody.innerHTML = '';
-                if(d.rows && d.rows.length) { d.rows.forEach(r => { tbody.appendChild(criarLinha(r.data, r.tipo, r.local, r.horaSaida, r.kmSaida, r.horaChegada, r.kmChegada)); }); } else { carregarExemplos(); }
+                if(d.rows && d.rows.length) {
+                    // Insere os registros na ordem do array, mas sempre no início (o último do array ficará no topo)
+                    d.rows.forEach(r => {
+                        const linha = criarLinha(r.data, r.tipo, r.local, r.horaSaida, r.kmSaida, r.horaChegada, r.kmChegada);
+                        tbody.insertBefore(linha, tbody.firstChild);
+                    });
+                } else { carregarExemplos(); }
                 if(d.assinaturaImg && d.assinaturaImg !== 'data:,') { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = d.assinaturaImg; }
                 updateTotalKm(); atualizarLimitesDatas(); return true;
             } catch(e) { return false; }
@@ -482,8 +486,11 @@
         function carregarExemplos() {
             tbody.innerHTML = '';
             let hojeStr = hoje();
-            tbody.appendChild(criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478'));
-            tbody.appendChild(criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502'));
+            // Para manter o mais recente (segundo exemplo) no topo, inserimos os exemplos na ordem inversa
+            const ex1 = criarLinha(hojeStr, 'saida', '🏥 HCI → 🏥 Clínica Esperança', '08:30', '62450', '09:15', '62478');
+            const ex2 = criarLinha(hojeStr, 'retorno', '🏥 Clínica Esperança → 🏥 HCI', '09:30', '62478', '10:05', '62502');
+            tbody.insertBefore(ex2, tbody.firstChild);
+            tbody.insertBefore(ex1, tbody.firstChild);
             updateTotalKm();
         }
 
@@ -600,12 +607,11 @@
             }
         }
 
-        // ======================= SINCRONIZAÇÃO COM GOOGLE SHEETS (NOVO) =======================
+        // ======================= SINCRONIZAÇÃO COM GOOGLE SHEETS =======================
         async function syncToGoogleSheets() {
             const url = localStorage.getItem('sheetsWebAppUrl_hci') || '';
             if (!url) {
                 showToast('⚠️ Configure a URL do Apps Script na seção de configuração');
-                // Abrir painel de configuração
                 configContent.className = 'config-content open';
                 sheetsUrlInput.focus();
                 return;
@@ -618,7 +624,6 @@
             statusText.textContent = 'Enviando...';
 
             try {
-                // Coletar registros da tabela
                 const registros = [];
                 document.querySelectorAll('#tableBody tr').forEach(tr => {
                     registros.push({
@@ -633,7 +638,6 @@
                     });
                 });
 
-                // Montar payload completo
                 const payload = {
                     mesNome: nomeMes(parseInt(mesSelect.value)),
                     ano: parseInt(anoSelect.value),
@@ -648,28 +652,19 @@
                     totalKm: totalSpan.innerText
                 };
 
-                // Enviar via POST com Content-Type text/plain (evita preflight CORS)
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=UTF-8'
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                     body: JSON.stringify(payload)
                 });
 
-                // Tentar parsear resposta JSON
                 let result;
                 const contentType = response.headers.get('content-type') || '';
                 if (contentType.includes('application/json')) {
                     result = await response.json();
                 } else {
-                    // Se não veio JSON, tentar ler como texto e parsear
                     const text = await response.text();
-                    try {
-                        result = JSON.parse(text);
-                    } catch(parseErr) {
-                        throw new Error('Resposta do servidor não é JSON válido. Verifique se o script está implantado como "Qualquer pessoa".');
-                    }
+                    try { result = JSON.parse(text); } catch(parseErr) { throw new Error('Resposta do servidor não é JSON válido. Verifique se o script está implantado como "Qualquer pessoa".'); }
                 }
 
                 if (result.status === 'success') {
@@ -700,13 +695,9 @@
                 syncInfoBox.querySelector('i').className = 'fas fa-exclamation-circle';
 
                 let msgErro = 'Erro de conexão.';
-                if (err.message.includes('JSON')) {
-                    msgErro = 'Resposta inválida. Verifique se o script está configurado como "Qualquer pessoa".';
-                } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-                    msgErro = 'Não foi possível conectar. Verifique a URL e sua internet.';
-                } else if (err.message) {
-                    msgErro = err.message;
-                }
+                if (err.message.includes('JSON')) msgErro = 'Resposta inválida. Verifique se o script está configurado como "Qualquer pessoa".';
+                else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) msgErro = 'Não foi possível conectar. Verifique a URL e sua internet.';
+                else if (err.message) msgErro = err.message;
                 lastSyncTimeText.textContent = msgErro;
                 showToast('❌ ' + msgErro);
             } finally {
